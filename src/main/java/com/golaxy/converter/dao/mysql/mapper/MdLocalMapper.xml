@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.golaxy.converter.dao.mysql.MdLocalDao">
+  <resultMap id="BaseResultMap" type="com.golaxy.converter.entity.mysql.MdLocal">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="file_md5" jdbcType="VARCHAR" property="fileMd5" />
+    <result column="type" jdbcType="TINYINT" property="type" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="path" jdbcType="VARCHAR" property="path" />
+    <result column="page" jdbcType="SMALLINT" property="page" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, file_md5, type, name, path, page
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from tbl_md_local
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from tbl_md_local
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.golaxy.converter.entity.mysql.MdLocal">
+    insert into tbl_md_local (id, file_md5, type, 
+      name, path, page)
+    values (#{id,jdbcType=INTEGER}, #{fileMd5,jdbcType=VARCHAR}, #{type,jdbcType=TINYINT}, 
+      #{name,jdbcType=VARCHAR}, #{path,jdbcType=VARCHAR}, #{page,jdbcType=SMALLINT})
+  </insert>
+  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.golaxy.converter.entity.mysql.MdLocal">
+    insert into tbl_md_local
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="fileMd5 != null">
+        file_md5,
+      </if>
+      <if test="type != null">
+        type,
+      </if>
+      <if test="name != null">
+        name,
+      </if>
+      <if test="path != null">
+        path,
+      </if>
+      <if test="page != null">
+        page,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="fileMd5 != null">
+        #{fileMd5,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        #{type,jdbcType=TINYINT},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="path != null">
+        #{path,jdbcType=VARCHAR},
+      </if>
+      <if test="page != null">
+        #{page,jdbcType=SMALLINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.golaxy.converter.entity.mysql.MdLocal">
+    update tbl_md_local
+    <set>
+      <if test="fileMd5 != null">
+        file_md5 = #{fileMd5,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        type = #{type,jdbcType=TINYINT},
+      </if>
+      <if test="name != null">
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="path != null">
+        path = #{path,jdbcType=VARCHAR},
+      </if>
+      <if test="page != null">
+        page = #{page,jdbcType=SMALLINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.golaxy.converter.entity.mysql.MdLocal">
+    update tbl_md_local
+    set file_md5 = #{fileMd5,jdbcType=VARCHAR},
+      type = #{type,jdbcType=TINYINT},
+      name = #{name,jdbcType=VARCHAR},
+      path = #{path,jdbcType=VARCHAR},
+      page = #{page,jdbcType=SMALLINT}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectByFileMd5" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from tbl_md_local
+    where file_md5 = #{fileMd5,jdbcType=VARCHAR}
+    order by type,page
+  </select>
+</mapper>

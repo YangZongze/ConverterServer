@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.golaxy.converter.dao.mysql.MdDao">
+  <resultMap id="BaseResultMap" type="com.golaxy.converter.entity.mysql.Md">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="article_id" jdbcType="INTEGER" property="articleId" />
+    <result column="article_uid" jdbcType="VARCHAR" property="articleUid" />
+    <result column="md_uid" jdbcType="VARCHAR" property="mdUid" />
+    <result column="md_title" jdbcType="VARCHAR" property="mdTitle" />
+    <result column="md_url" jdbcType="VARCHAR" property="mdUrl" />
+    <result column="page" jdbcType="INTEGER" property="page" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, article_id, article_uid, md_uid, md_title, md_url, page
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from tbl_md
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from tbl_md
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <select id="selectByArticleUid" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from tbl_md
+    where article_uid = #{article_uid,jdbcType=VARCHAR}
+  </select>
+  <insert id="insert" parameterType="com.golaxy.converter.entity.mysql.Md">
+    insert into tbl_md (id, article_id, article_uid, 
+      md_uid, md_title, md_url, 
+      page)
+    values (#{id,jdbcType=INTEGER}, #{articleId,jdbcType=INTEGER}, #{articleUid,jdbcType=VARCHAR}, 
+      #{mdUid,jdbcType=VARCHAR}, #{mdTitle,jdbcType=VARCHAR}, #{mdUrl,jdbcType=VARCHAR}, 
+      #{page,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.golaxy.converter.entity.mysql.Md">
+    insert into tbl_md
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="articleId != null">
+        article_id,
+      </if>
+      <if test="articleUid != null">
+        article_uid,
+      </if>
+      <if test="mdUid != null">
+        md_uid,
+      </if>
+      <if test="mdTitle != null">
+        md_title,
+      </if>
+      <if test="mdUrl != null">
+        md_url,
+      </if>
+      <if test="page != null">
+        page,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="articleId != null">
+        #{articleId,jdbcType=INTEGER},
+      </if>
+      <if test="articleUid != null">
+        #{articleUid,jdbcType=VARCHAR},
+      </if>
+      <if test="mdUid != null">
+        #{mdUid,jdbcType=VARCHAR},
+      </if>
+      <if test="mdTitle != null">
+        #{mdTitle,jdbcType=VARCHAR},
+      </if>
+      <if test="mdUrl != null">
+        #{mdUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="page != null">
+        #{page,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.golaxy.converter.entity.mysql.Md">
+    update tbl_md
+    <set>
+      <if test="articleId != null">
+        article_id = #{articleId,jdbcType=INTEGER},
+      </if>
+      <if test="articleUid != null">
+        #{articleUid,jdbcType=VARCHAR},
+      </if>
+      <if test="mdUid != null">
+        #{mdUid,jdbcType=VARCHAR},
+      </if>
+      <if test="mdTitle != null">
+        md_title = #{mdTitle,jdbcType=VARCHAR},
+      </if>
+      <if test="mdUrl != null">
+        md_url = #{mdUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="page != null">
+        page = #{page,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.golaxy.converter.entity.mysql.Md">
+    update tbl_md
+    set article_id = #{articleId,jdbcType=INTEGER},
+    article_uid = #{articleUid,jdbcType=VARCHAR},
+      md_uid = #{mdUid,jdbcType=VARCHAR},
+      md_title = #{mdTitle,jdbcType=VARCHAR},
+      md_url = #{mdUrl,jdbcType=VARCHAR},
+      page = #{page,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

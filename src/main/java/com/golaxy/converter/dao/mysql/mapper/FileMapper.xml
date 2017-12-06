@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.golaxy.converter.dao.mysql.FileDao">
+  <resultMap id="BaseResultMap" type="com.golaxy.converter.entity.mysql.File">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="md5" jdbcType="VARCHAR" property="md5" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="path" jdbcType="VARCHAR" property="path" />
+    <result column="type" jdbcType="VARCHAR" property="type" />
+    <result column="upload_time" jdbcType="TIMESTAMP" property="uploadTime" />
+    <result column="convert_status" jdbcType="TINYINT" property="convertStatus" />
+    <result column="convert_log" jdbcType="VARCHAR" property="convertLog" />
+    <result column="convert_result" jdbcType="BIT" property="convertResult" />
+    <result column="notice_status" jdbcType="BIT" property="noticeStatus" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, md5, path, name, type, upload_time, convert_status, convert_log, convert_result, notice_status
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from tbl_file
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectByUniqueKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from tbl_file
+    where md5 = #{md5,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from tbl_file
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.golaxy.converter.entity.mysql.File">
+    insert into tbl_file (id, md5, path,
+      name, type, upload_time,
+      convert_status, convert_log, convert_result,
+      notice_status)
+    values (#{id,jdbcType=INTEGER}, #{md5,jdbcType=VARCHAR}, #{path,jdbcType=VARCHAR},
+      #{name,jdbcType=VARCHAR}, #{type,jdbcType=VARCHAR}, #{uploadTime,jdbcType=TIMESTAMP},
+      #{convertStatus,jdbcType=TINYINT}, #{convertLog,jdbcType=VARCHAR}, #{convertResult,jdbcType=BIT},
+      #{noticeStatus,jdbcType=BIT})
+  </insert>
+  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.golaxy.converter.entity.mysql.File">
+    insert into tbl_file
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="md5 != null">
+        md5,
+      </if>
+      <if test="path != null">
+        path,
+      </if>
+      <if test="name != null">
+        name,
+      </if>
+      <if test="type != null">
+        type,
+      </if>
+      <if test="uploadTime != null">
+        upload_time,
+      </if>
+      <if test="convertStatus != null">
+        convert_status,
+      </if>
+      <if test="convertLog != null">
+        convert_log,
+      </if>
+      <if test="convertResult != null">
+        convert_result,
+      </if>
+      <if test="noticeStatus != null">
+        notice_status,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="md5 != null">
+        #{md5,jdbcType=VARCHAR},
+      </if>
+      <if test="path != null">
+        #{path,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="uploadTime != null">
+        #{uploadTime,jdbcType=TINYINT},
+      </if>
+      <if test="convertStatus != null">
+        #{convertStatus,jdbcType=TINYINT},
+      </if>
+      <if test="convertLog != null">
+        #{convertLog,jdbcType=VARCHAR},
+      </if>
+      <if test="convertResult != null">
+        #{convertResult,jdbcType=BIT},
+      </if>
+      <if test="noticeStatus != null">
+        #{noticeStatus,jdbcType=BIT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.golaxy.converter.entity.mysql.File">
+    update tbl_file
+    <set>
+      <if test="md5 != null">
+        md5 = #{md5,jdbcType=VARCHAR},
+      </if>
+      <if test="path != null">
+        path = #{path,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        type = #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="uploadTime != null">
+        upload_time = #{uploadTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="convertStatus != null">
+        convert_status = #{convertStatus,jdbcType=TINYINT},
+      </if>
+      <if test="convertLog != null">
+        convert_log = #{convertLog,jdbcType=VARCHAR},
+      </if>
+      <if test="convertResult != null">
+        convert_result = #{convertResult,jdbcType=BIT},
+      </if>
+      <if test="convertStatus != null">
+        notice_status = #{noticeStatus,jdbcType=BIT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.golaxy.converter.entity.mysql.File">
+    update tbl_file
+    set md5 = #{md5,jdbcType=VARCHAR},
+      path = #{path,jdbcType=VARCHAR},
+      name = #{name,jdbcType=VARCHAR},
+      type = #{type,jdbcType=VARCHAR},
+      upload_time = #{uploadTime,jdbcType=TIMESTAMP},
+      convert_status = #{convertStatus,jdbcType=TINYINT},
+      convert_log = #{convertLog,jdbcType=VARCHAR},
+      convert_result = #{convertResult,jdbcType=BIT},
+      notice_status = #{noticeStatus,jdbcType=BIT}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByUniqueKeySelective" parameterType="com.golaxy.converter.entity.mysql.File">
+    update tbl_file
+    <set>
+      <if test="path != null">
+        path = #{path,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        type = #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="uploadTime != null">
+        upload_time = #{uploadTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="convertStatus != null">
+        convert_status = #{convertStatus,jdbcType=TINYINT},
+      </if>
+      <if test="convertLog != null">
+        convert_log = #{convertLog,jdbcType=VARCHAR},
+      </if>
+      <if test="convertResult != null">
+        convert_result = #{convertResult,jdbcType=BIT},
+      </if>
+      <if test="noticeStatus != null">
+        notice_status = #{noticeStatus,jdbcType=BIT},
+      </if>
+    </set>
+    where md5 = #{md5,jdbcType=VARCHAR}
+  </update>
+</mapper>

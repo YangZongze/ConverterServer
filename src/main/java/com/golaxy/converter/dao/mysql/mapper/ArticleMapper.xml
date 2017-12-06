@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.golaxy.converter.dao.mysql.ArticleDao">
+  <resultMap id="BaseResultMap" type="com.golaxy.converter.entity.mysql.Article">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="article_uid" jdbcType="VARCHAR" property="articleUid" />
+    <result column="file_md5" jdbcType="VARCHAR" property="fileMd5" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="url" jdbcType="VARCHAR" property="url" />
+    <result column="parent_cate_id" jdbcType="INTEGER" property="parentCateId" />
+    <result column="art_edit_status" jdbcType="BIT" property="artEditStatus" />
+    <result column="art_check_status" jdbcType="BIT" property="artCheckStatus" />
+    <result column="status" jdbcType="BIT" property="status" />
+    <result column="list_order" jdbcType="INTEGER" property="listOrder" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="upload_user_source" jdbcType="TINYINT" property="uploadUserSource" />
+    <result column="author" jdbcType="VARCHAR" property="author" />
+    <result column="last_update_username" jdbcType="VARCHAR" property="lastUpdateUsername" />
+    <result column="type" jdbcType="TINYINT" property="type" />
+    <result column="total_page" jdbcType="INTEGER" property="totalPage" />
+    <result column="public_status" jdbcType="BIT" property="publicStatus" />
+    <result column="index_status" jdbcType="BIT" property="indexStatus" />
+  </resultMap>
+  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.golaxy.converter.entity.mysql.Article">
+    <result column="content" jdbcType="LONGVARCHAR" property="content" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, article_uid, file_md5, title, url, parent_cate_id, art_edit_status, art_check_status, status,
+    list_order, create_time, update_time, upload_user_source, author, last_update_username, 
+    type, total_page, public_status, index_status
+  </sql>
+  <sql id="Blob_Column_List">
+    content
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="ResultMapWithBLOBs">
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from tbl_article
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from tbl_article
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <select id="selectByUniqueKey" parameterType="java.lang.String" resultMap="ResultMapWithBLOBs">
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from tbl_article
+    where article_uid = #{article_uid,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByUserMd5" resultMap="ResultMapWithBLOBs">
+    select
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from tbl_article
+    where file_md5 = #{arg0} and author = #{arg1}
+  </select>
+  <delete id="deleteByUniqueKey" parameterType="java.lang.String">
+    delete from tbl_article
+    where article_uid = #{article_uid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.golaxy.converter.entity.mysql.Article">
+    insert into tbl_article (id, article_uid, file_md5, title,
+      url, parent_cate_id, art_edit_status, 
+      art_check_status, status, list_order, 
+      create_time, update_time, upload_user_source, 
+      author, last_update_username, type, 
+      total_page, public_status, index_status, 
+      content)
+    values (#{id,jdbcType=INTEGER}, #{articleUid,jdbcType=VARCHAR}, #{fileMd5,jdbcType=VARCHAR}, #{title,jdbcType=VARCHAR},
+      #{url,jdbcType=VARCHAR}, #{parentCateId,jdbcType=INTEGER}, #{artEditStatus,jdbcType=BIT}, 
+      #{artCheckStatus,jdbcType=BIT}, #{status,jdbcType=BIT}, #{listOrder,jdbcType=INTEGER}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{uploadUserSource,jdbcType=TINYINT}, 
+      #{author,jdbcType=VARCHAR}, #{lastUpdateUsername,jdbcType=VARCHAR}, #{type,jdbcType=TINYINT}, 
+      #{totalPage,jdbcType=INTEGER}, #{publicStatus,jdbcType=BIT}, #{indexStatus,jdbcType=BIT},
+      #{content,jdbcType=LONGVARCHAR})
+  </insert>
+  <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.golaxy.converter.entity.mysql.Article">
+    insert into tbl_article
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="articleUid != null">
+        article_uid,
+      </if>
+      <if test="fileMd5 != null">
+        file_md5,
+      </if>
+      <if test="title != null">
+        title,
+      </if>
+      <if test="url != null">
+        url,
+      </if>
+      <if test="parentCateId != null">
+        parent_cate_id,
+      </if>
+      <if test="artEditStatus != null">
+        art_edit_status,
+      </if>
+      <if test="artCheckStatus != null">
+        art_check_status,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+      <if test="listOrder != null">
+        list_order,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+      <if test="uploadUserSource != null">
+        upload_user_source,
+      </if>
+      <if test="author != null">
+        author,
+      </if>
+      <if test="lastUpdateUsername != null">
+        last_update_username,
+      </if>
+      <if test="type != null">
+        type,
+      </if>
+      <if test="totalPage != null">
+        total_page,
+      </if>
+      <if test="publicStatus != null">
+        public_status,
+      </if>
+      <if test="indexStatus != null">
+        index_status,
+      </if>
+      <if test="content != null">
+        content,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="articleUid != null">
+        #{articleUid,jdbcType=VARCHAR},
+      </if>
+      <if test="fileMd5 != null">
+        #{fileMd5,jdbcType=VARCHAR},
+      </if>
+      <if test="title != null">
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="url != null">
+        #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="parentCateId != null">
+        #{parentCateId,jdbcType=INTEGER},
+      </if>
+      <if test="artEditStatus != null">
+        #{artEditStatus,jdbcType=BIT},
+      </if>
+      <if test="artCheckStatus != null">
+        #{artCheckStatus,jdbcType=BIT},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=BIT},
+      </if>
+      <if test="listOrder != null">
+        #{listOrder,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="uploadUserSource != null">
+        #{uploadUserSource,jdbcType=TINYINT},
+      </if>
+      <if test="author != null">
+        #{author,jdbcType=VARCHAR},
+      </if>
+      <if test="lastUpdateUsername != null">
+        #{lastUpdateUsername,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        #{type,jdbcType=TINYINT},
+      </if>
+      <if test="totalPage != null">
+        #{totalPage,jdbcType=INTEGER},
+      </if>
+      <if test="publicStatus != null">
+        #{publicStatus,jdbcType=BIT},
+      </if>
+      <if test="indexStatus != null">
+        #{indexStatus,jdbcType=BIT},
+      </if>
+      <if test="content != null">
+        #{content,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.golaxy.converter.entity.mysql.Article">
+    update tbl_article
+    <set>
+      <if test="articleUid != null">
+        article_uid = #{articleUid,jdbcType=VARCHAR},
+      </if>
+      <if test="fileMd5 != null">
+        file_md5 = #{fileMd5,jdbcType=VARCHAR},
+      </if>
+      <if test="title != null">
+        title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="url != null">
+        url = #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="parentCateId != null">
+        parent_cate_id = #{parentCateId,jdbcType=INTEGER},
+      </if>
+      <if test="artEditStatus != null">
+        art_edit_status = #{artEditStatus,jdbcType=BIT},
+      </if>
+      <if test="artCheckStatus != null">
+        art_check_status = #{artCheckStatus,jdbcType=BIT},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=BIT},
+      </if>
+      <if test="listOrder != null">
+        list_order = #{listOrder,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="uploadUserSource != null">
+        upload_user_source = #{uploadUserSource,jdbcType=TINYINT},
+      </if>
+      <if test="author != null">
+        author = #{author,jdbcType=VARCHAR},
+      </if>
+      <if test="lastUpdateUsername != null">
+        last_update_username = #{lastUpdateUsername,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        type = #{type,jdbcType=TINYINT},
+      </if>
+      <if test="totalPage != null">
+        total_page = #{totalPage,jdbcType=INTEGER},
+      </if>
+      <if test="publicStatus != null">
+        public_status = #{publicStatus,jdbcType=BIT},
+      </if>
+      <if test="indexStatus != null">
+        index_status = #{indexStatus,jdbcType=BIT},
+      </if>
+      <if test="content != null">
+        content = #{content,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.golaxy.converter.entity.mysql.Article">
+    update tbl_article
+    set article_uid = #{articleUid,jdbcType=VARCHAR},
+      file_md5 = #{fileMd5,jdbcType=VARCHAR},
+      title = #{title,jdbcType=VARCHAR},
+      url = #{url,jdbcType=VARCHAR},
+      parent_cate_id = #{parentCateId,jdbcType=INTEGER},
+      art_edit_status = #{artEditStatus,jdbcType=BIT},
+      art_check_status = #{artCheckStatus,jdbcType=BIT},
+      status = #{status,jdbcType=BIT},
+      list_order = #{listOrder,jdbcType=INTEGER},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      upload_user_source = #{uploadUserSource,jdbcType=TINYINT},
+      author = #{author,jdbcType=VARCHAR},
+      last_update_username = #{lastUpdateUsername,jdbcType=VARCHAR},
+      type = #{type,jdbcType=TINYINT},
+      total_page = #{totalPage,jdbcType=INTEGER},
+      public_status = #{publicStatus,jdbcType=BIT},
+      index_status = #{indexStatus,jdbcType=BIT},
+      content = #{content,jdbcType=LONGVARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.golaxy.converter.entity.mysql.Article">
+    update tbl_article
+    set article_uid = #{articleUid,jdbcType=VARCHAR},
+      file_md5 = #{fileMd5,jdbcType=VARCHAR},
+      title = #{title,jdbcType=VARCHAR},
+      url = #{url,jdbcType=VARCHAR},
+      parent_cate_id = #{parentCateId,jdbcType=INTEGER},
+      art_edit_status = #{artEditStatus,jdbcType=BIT},
+      art_check_status = #{artCheckStatus,jdbcType=BIT},
+      status = #{status,jdbcType=BIT},
+      list_order = #{listOrder,jdbcType=INTEGER},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      upload_user_source = #{uploadUserSource,jdbcType=TINYINT},
+      author = #{author,jdbcType=VARCHAR},
+      last_update_username = #{lastUpdateUsername,jdbcType=VARCHAR},
+      type = #{type,jdbcType=TINYINT},
+      total_page = #{totalPage,jdbcType=INTEGER},
+      public_status = #{publicStatus,jdbcType=BIT},
+      index_status = #{indexStatus,jdbcType=BIT}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByUniqueKeySelective" parameterType="com.golaxy.converter.entity.mysql.Article">
+    update tbl_article
+    <set>
+      <if test="fileMd5 != null">
+        file_md5 = #{fileMd5,jdbcType=VARCHAR},
+      </if>
+      <if test="title != null">
+        title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="url != null">
+        url = #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="parentCateId != null">
+        parent_cate_id = #{parentCateId,jdbcType=INTEGER},
+      </if>
+      <if test="artEditStatus != null">
+        art_edit_status = #{artEditStatus,jdbcType=BIT},
+      </if>
+      <if test="artCheckStatus != null">
+        art_check_status = #{artCheckStatus,jdbcType=BIT},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=BIT},
+      </if>
+      <if test="listOrder != null">
+        list_order = #{listOrder,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="uploadUserSource != null">
+        upload_user_source = #{uploadUserSource,jdbcType=TINYINT},
+      </if>
+      <if test="author != null">
+        author = #{author,jdbcType=VARCHAR},
+      </if>
+      <if test="lastUpdateUsername != null">
+        last_update_username = #{lastUpdateUsername,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        type = #{type,jdbcType=TINYINT},
+      </if>
+      <if test="totalPage != null">
+        total_page = #{totalPage,jdbcType=INTEGER},
+      </if>
+      <if test="publicStatus != null">
+        public_status = #{publicStatus,jdbcType=BIT},
+      </if>
+      <if test="indexStatus != null">
+        index_status = #{indexStatus,jdbcType=BIT},
+      </if>
+      <if test="content != null">
+        content = #{content,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where article_uid = #{article_uid,jdbcType=VARCHAR}
+  </update>
+</mapper>
