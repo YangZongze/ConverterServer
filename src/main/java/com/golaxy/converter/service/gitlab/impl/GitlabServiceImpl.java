@@ -17,6 +17,7 @@ import sun.misc.BASE64Decoder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.util.*;
 
@@ -28,15 +29,22 @@ public class GitlabServiceImpl implements IGitlabService {
 	private static InputStream in = GitlabServiceImpl.class.getClassLoader().getResourceAsStream("config.properties");
 	private static String gitlabBaseUrl;
 	private static String privateToken;
-	private static String contentType;
+	private static String gitlabBasePath;
+	private static String contentType = "application/json;charset=UTF-8";
 
 	static {
 		try {
-			properties.load(in);
-			
+		    // 配置文件中有中文
+			properties.load(new InputStreamReader(in, "UTF-8"));
+
 			gitlabBaseUrl = properties.getProperty("gitlabBaseUrl");
-			privateToken = properties.getProperty("PrivateToken");
-			contentType = "application/json;charset=UTF-8";
+			privateToken = properties.getProperty("gitlabPrivateToken");
+			gitlabBasePath = properties.getProperty("gitlabBasePath");
+			gitlabBasePath = gitlabBasePath.replaceAll("[/]{2,}", "/");
+            if (gitlabBasePath.substring(0, 1).equals("/"))
+                gitlabBasePath = gitlabBasePath.substring(1);
+            if (gitlabBasePath.substring(gitlabBasePath.length()-1, gitlabBasePath.length()).equals("/"))
+                gitlabBasePath = gitlabBasePath.substring(0, gitlabBasePath.length()-1);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -45,12 +53,12 @@ public class GitlabServiceImpl implements IGitlabService {
 
 	@Override
 	public String gitlabSave(String articleName, String fileName, String filePath, String userName, boolean update) throws ExistException {
-		
-		//String fileGitPath = "upload/" + CommonUtils.getStringDate() + "/" + articleName + "/" + fileName;
-        String fileGitPath = "/keepwork/baike/百科/测试/" + CommonUtils.getStringDate() + "/" + articleName + "/" + fileName;
-		String fileBase64Content = CommonUtils.file2Base64(filePath);
 
+        String fileGitPath = gitlabBasePath + "/" + CommonUtils.getStringDate() + "/" + articleName + "/" + fileName;
+		String fileBase64Content = CommonUtils.file2Base64(filePath);
 		boolean state;
+
+		fileGitPath = fileGitPath.replaceAll("[/]{2,}", "/");
 		try {
 			if (!update)
 				state = gitlabAdd(filePath, fileGitPath, fileBase64Content, userName);
@@ -67,10 +75,9 @@ public class GitlabServiceImpl implements IGitlabService {
 
 	@Override
 	public String gitlabSaveNone(String articleName, String fileName, String filePath, String userName) throws ExistException {
-		
-		//String fileGitPath = "upload/" + CommonUtils.getStringDate() + "/" + articleName + "/" + fileName;
-        String fileGitPath = "/keepwork/baike/百科/测试/" + CommonUtils.getStringDate() + "/" + articleName + "/" + fileName;
-		boolean state = true;
+
+        String fileGitPath = gitlabBasePath + "/" + CommonUtils.getStringDate() + "/" + articleName + "/" + fileName;
+		boolean state;
 		try {
 			state = gitlabAdd(filePath, fileGitPath, "", userName);
 		} catch (ExistException e) {
@@ -101,7 +108,7 @@ public class GitlabServiceImpl implements IGitlabService {
 		String body = JackJsonUtils.toJson(gitlabData);
 		
 		try {
-			boolean saveStatus = true;
+			boolean saveStatus;
 			int retryTimes = 1;
 			do {
 				Map<String, Object> result = HttpRequestUtils.httpPost(url, headers, body, false);

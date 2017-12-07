@@ -14,10 +14,20 @@
     
 打成war包：
 
-    1) mvn compile;
-    2) mvn package.
+    在项目根目录下执行：mvn clean install
+    在项目中会生成target/ConverterServer.war
 
     
-# 3.项目部署
+# 3.项目部署及运行
 
-部署在格式转换docker容器下的tomcat/webapp下即可
+## 3.1 jetty部署及运行
+
+## 3.1 jetty运行
+
+    1) 把ConverterServer.war拷贝到格式转换docker容器环境下任意路径
+    2) 执行：java -jar ConverterServer.war
+
+## 3.2 tomcat运行
+
+    1) 把ConverterServer.war拷贝到格式转换docker容器环境下的tomcat/webapp路径下
+    2) tomcat根目录下执行：bin/startup.sh

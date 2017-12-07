@@ -11,6 +11,16 @@
     <param-value>classpath:spring-mybatis.xml</param-value>
   </context-param>
 
+  <!-- 代码中已加了跨域设置，这里就不用了 -->
+  <!--<filter>-->
+    <!--<filter-name>CORS</filter-name>-->
+    <!--<filter-class>com.thetransactioncompany.cors.CORSFilter</filter-class>-->
+  <!--</filter>-->
+  <!--<filter-mapping>-->
+    <!--<filter-name>CORS</filter-name>-->
+    <!--<url-pattern>/*</url-pattern>-->
+  <!--</filter-mapping>-->
+
   <!-- Spring监听器 -->
   <listener>
     <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>

@@ -10,7 +10,9 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <spring.version>4.1.4.RELEASE</spring.version>
+    <!--<spring.version>4.3.13.RELEASE</spring.version>-->
+    <spring.version>5.0.2.RELEASE</spring.version>
+    <jetty.version>9.4.8.v20171121</jetty.version>
   </properties>
 
   <dependencies>
@@ -24,13 +26,19 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-websocket</artifactId>
-      <version>4.1.4.RELEASE</version>
+      <version>${spring.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-beans</artifactId>
-      <version>4.1.4.RELEASE</version>
+      <version>${spring.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jdbc</artifactId>
+      <version>${spring.version}</version>
     </dependency>
 
     <dependency>
@@ -39,10 +47,17 @@
       <version>1.0</version>
     </dependency>
 
+    <!--<dependency>-->
+      <!--<groupId>javax.servlet</groupId>-->
+      <!--<artifactId>servlet-api</artifactId>-->
+      <!--<version>2.5</version>-->
+      <!--<scope>provided</scope>-->
+    <!--</dependency>-->
+
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <version>2.5</version>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
       <scope>provided</scope>
     </dependency>
 
@@ -86,12 +101,6 @@
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
       <version>5.1.38</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-jdbc</artifactId>
-      <version>4.1.4.RELEASE</version>
     </dependency>
 
     <dependency>
@@ -148,6 +157,72 @@
       <version>1.0.7</version>
     </dependency>
 
+    <!-- Jetty -->
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>${jetty.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-webapp</artifactId>
+      <version>${jetty.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Jetty websocket-->
+    <dependency>
+      <groupId>org.eclipse.jetty.websocket</groupId>
+      <artifactId>websocket-client</artifactId>
+      <version>${jetty.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.websocket</groupId>
+      <artifactId>websocket-server</artifactId>
+      <version>${jetty.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-client</artifactId>
+      <version>${jetty.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!--<dependency>-->
+      <!--<groupId>org.eclipse.jetty</groupId>-->
+      <!--<artifactId>jetty-servlets</artifactId>-->
+      <!--<version>${jetty.version}</version>-->
+      <!--<scope>provided</scope>-->
+    <!--</dependency>-->
+
+    <!-- the dependency can be commented if no jsp -->
+    <!--<dependency>-->
+      <!--<groupId>org.eclipse.jetty.orbit</groupId>-->
+      <!--<artifactId>org.apache.jasper.glassfish</artifactId>-->
+      <!--<version>2.2.2.v201112011158</version>-->
+      <!--<scope>provided</scope>-->
+    <!--</dependency>-->
+
+    <!--<dependency>-->
+      <!--<groupId>org.eclipse.jetty.orbit</groupId>-->
+      <!--<artifactId>javax.el</artifactId>-->
+      <!--<version>2.2.0.v201303151357</version>-->
+      <!--<scope>provided</scope>-->
+    <!--</dependency>-->
+    <!--<dependency>-->
+      <!--<groupId>org.eclipse.jetty</groupId>-->
+      <!--<artifactId>jetty-jsp</artifactId>-->
+      <!--<version>9.3.0.M1</version>-->
+    <!--</dependency>-->
+
+    <dependency>
+      <groupId>com.thetransactioncompany</groupId>
+      <artifactId>cors-filter</artifactId>
+      <version>2.6</version>
+    </dependency>
 
     <dependency>
       <groupId>junit</groupId>
@@ -175,8 +250,61 @@
         <artifactId>maven-war-plugin</artifactId>
         <version>2.6</version>
         <configuration>
-          <attachClasses>true</attachClasses>
+          <archive>
+            <manifest>
+              <mainClass>StartWeb</mainClass>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix>WEB-INF/lib</classpathPrefix>
+            </manifest>
+          </archive>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.8</version>
+        <executions>
+          <execution>
+            <id>main-class-placement</id>
+            <phase>prepare-package</phase>
+            <configuration>
+              <target>
+                <copy todir="${project.build.directory}/${project.artifactId}/">
+                  <fileset dir="${project.build.directory}/classes/">
+                    <include name="**/*.*" />
+                  </fileset>
+                </copy>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.0.2</version>
+        <executions>
+          <execution>
+            <id>jetty-classpath</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>unpack-dependencies</goal>
+            </goals>
+            <configuration>
+              <!--<includeGroupIds>org.eclipse.jetty, org.eclipse.jetty.orbit</includeGroupIds>-->
+              <includeGroupIds>org.eclipse.jetty, javax.servlet</includeGroupIds>
+              <includeScope>provided</includeScope>
+              <!-- remove some files in order to decrease size -->
+              <excludes>*, about_files/*, META-INF/*</excludes>
+              <outputDirectory>
+                ${project.build.directory}/${project.artifactId}
+              </outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
 
@@ -186,7 +314,6 @@
         <includes>
           <include>**/*.xml</include>
         </includes>
-        <!-- 是否替换资源中的属性 -->
         <filtering>false</filtering>
       </resource>
       <resource>
