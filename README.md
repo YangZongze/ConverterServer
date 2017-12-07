@@ -20,8 +20,6 @@
     
 # 3.项目部署及运行
 
-## 3.1 jetty部署及运行
-
 ## 3.1 jetty运行
 
     1) 把ConverterServer.war拷贝到格式转换docker容器环境下任意路径
