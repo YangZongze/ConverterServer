@@ -9,9 +9,10 @@
     <result column="md_title" jdbcType="VARCHAR" property="mdTitle" />
     <result column="md_url" jdbcType="VARCHAR" property="mdUrl" />
     <result column="page" jdbcType="INTEGER" property="page" />
+    <result column="index_status" jdbcType="BIT" property="indexStatus" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, article_id, article_uid, md_uid, md_title, md_url, page
+    id, article_id, article_uid, md_uid, md_title, md_url, page, index_status
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
@@ -31,11 +32,11 @@
   </select>
   <insert id="insert" parameterType="com.golaxy.converter.entity.mysql.Md">
     insert into tbl_md (id, article_id, article_uid, 
-      md_uid, md_title, md_url, 
-      page)
+      md_uid, md_title, md_url,
+      page, index_status)
     values (#{id,jdbcType=INTEGER}, #{articleId,jdbcType=INTEGER}, #{articleUid,jdbcType=VARCHAR}, 
       #{mdUid,jdbcType=VARCHAR}, #{mdTitle,jdbcType=VARCHAR}, #{mdUrl,jdbcType=VARCHAR}, 
-      #{page,jdbcType=INTEGER})
+      #{page,jdbcType=INTEGER}, #{indexStatus,jdbcType=BIT})
   </insert>
   <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.golaxy.converter.entity.mysql.Md">
     insert into tbl_md
@@ -61,6 +62,9 @@
       <if test="page != null">
         page,
       </if>
+      <if test="indexStatus != null">
+        index_status,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -84,6 +88,9 @@
       <if test="page != null">
         #{page,jdbcType=INTEGER},
       </if>
+      <if test="indexStatus != null">
+        #{indexStatus,jdbcType=BIT},
+      </if>
     </trim>
   </insert>
   <update id="updateByPrimaryKeySelective" parameterType="com.golaxy.converter.entity.mysql.Md">
@@ -93,10 +100,10 @@
         article_id = #{articleId,jdbcType=INTEGER},
       </if>
       <if test="articleUid != null">
-        #{articleUid,jdbcType=VARCHAR},
+        article_uid = #{articleUid,jdbcType=VARCHAR},
       </if>
       <if test="mdUid != null">
-        #{mdUid,jdbcType=VARCHAR},
+        md_uid = #{mdUid,jdbcType=VARCHAR},
       </if>
       <if test="mdTitle != null">
         md_title = #{mdTitle,jdbcType=VARCHAR},
@@ -107,17 +114,21 @@
       <if test="page != null">
         page = #{page,jdbcType=INTEGER},
       </if>
+      <if test="indexStatus != null">
+        index_status = #{indexStatus,jdbcType=BIT},
+      </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
   <update id="updateByPrimaryKey" parameterType="com.golaxy.converter.entity.mysql.Md">
     update tbl_md
     set article_id = #{articleId,jdbcType=INTEGER},
-    article_uid = #{articleUid,jdbcType=VARCHAR},
+      article_uid = #{articleUid,jdbcType=VARCHAR},
       md_uid = #{mdUid,jdbcType=VARCHAR},
       md_title = #{mdTitle,jdbcType=VARCHAR},
       md_url = #{mdUrl,jdbcType=VARCHAR},
-      page = #{page,jdbcType=INTEGER}
+      page = #{page,jdbcType=INTEGER},
+      index_status = #{indexStatus,jdbcType=BIT}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>

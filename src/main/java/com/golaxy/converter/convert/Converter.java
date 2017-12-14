@@ -67,6 +67,10 @@ public class Converter {
 				break;
 			case "txt":
 				state = txt2Md(srcFile, mdPath);
+				break;
+            case "md":
+                state = md2Md(srcFile, mdPath);
+                break;
 			default:
 				break;
 		}	
@@ -235,6 +239,10 @@ public class Converter {
             for (int i=0; i<mdStrings.size(); i++) {
                 String mdFileName = srcFileNameNoExt + "（第" + (i+1) + "页）" + ".md";
                 String mdFile = mdPath + File.separator + mdFileName;
+
+                //加分页链接
+
+
                 CommonUtils.write(mdFile, mdStrings.get(i), "UTF-8");
                 mdNames.add(mdFile);
             }
@@ -365,6 +373,42 @@ public class Converter {
 
         return exit;
 	}
+
+    /**
+     * 上传的md做一些处理
+     * @param mdFile  txt路径
+     * @param mdPath   md存储路径
+     * @return
+     * @throws ConvertFailException
+     */
+    private static boolean md2Md(String mdFile, String mdPath) throws ConvertFailException {
+        boolean exit = false;
+
+        try {
+            String charSet = CommonUtils.getFileEncode(mdFile);
+            if (charSet!=null && !charSet.equalsIgnoreCase("utf-8")) {
+                String content = CommonUtils.read(mdFile, charSet);
+                CommonUtils.fileDelete(mdFile);
+                CommonUtils.write(mdFile, content, "UTF-8");
+
+                if (new File(mdFile).exists()) {
+                    exit = true;
+                    logger.info("[格式转换]: md-->md 成功");
+                } else {
+                    exit = false;
+                    logger.info("[格式转换]: md-->md 失败");
+                    throw new ConvertFailException();
+                }
+            } else {
+                throw new ConvertFailException("文件格式不可读");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new ConvertFailException("文件读取错误");
+        }
+
+        return exit;
+    }
 	
 	/**
 	 * 调用转换工具,可以实现

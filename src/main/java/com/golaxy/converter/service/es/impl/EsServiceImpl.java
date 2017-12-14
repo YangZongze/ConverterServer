@@ -32,8 +32,9 @@ public class EsServiceImpl implements IEsService {
 	}
 
 	@Override
-	public void esAdd(ESSetData esSetData) throws Exception {
-	
+	public String esIndex(ESSetData esSetData) throws Exception {
+
+	    String indexId = null;
 		String url = properties.getProperty("esIndex");
 		Map<String, String> headers = new HashMap<>();
 		headers.put("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
@@ -44,7 +45,7 @@ public class EsServiceImpl implements IEsService {
 		params.add(new BasicNameValuePair("content", esSetData.getContent()));
 		params.add(new BasicNameValuePair("path", esSetData.getPath()));
 		params.add(new BasicNameValuePair("page", String.valueOf(esSetData.getPage())));
-		params.add(new BasicNameValuePair("page", String.valueOf(esSetData.getTotalpage())));
+		params.add(new BasicNameValuePair("totalpage", String.valueOf(esSetData.getTotalpage())));
 		params.add(new BasicNameValuePair("public_status", Boolean.toString(esSetData.getPublic_status())));
 		params.add(new BasicNameValuePair("source", String.valueOf(esSetData.getSource())));		
 		params.add(new BasicNameValuePair("author", esSetData.getAuthor()));
@@ -66,21 +67,24 @@ public class EsServiceImpl implements IEsService {
 				@SuppressWarnings("unchecked")
 				Map<String, Object> res = JackJsonUtils.fromJson(responseBody, Map.class);
 				int code = (int) res.get("code");
-				if (code != 200) {
-					logger.error("ES | " + responseBody);
-					throw new Exception();
+				if (code == 200) {
+                    logger.info("ES | " + responseBody);
+                    indexId = (String) res.get("iid");
 				} else {
-					logger.info("ES | " + responseBody);
+                    logger.error("ES | " + responseBody);
+                    throw new Exception();
 				}
 			}	
 		} catch (Exception e) {
 			logger.error("ES | " + e.getMessage());
 			throw new Exception();
-		}		
+		}
+
+		return indexId;
 	}
 
 	@Override
-	public void esGet(List<NameValuePair> params) {
+	public void esSearch(List<NameValuePair> params) {
 
 	}
 

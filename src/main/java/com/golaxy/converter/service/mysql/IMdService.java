@@ -7,8 +7,10 @@ import java.util.List;
 
 public interface IMdService {
 
-	public int MdAdd(int articleId, String articleUid, String mdTitle, String mdUrl, int page);
+	public int mdAdd(int articleId, String articleUid, String mdTitle, String mdUrl, int page);
 	
 	public List<Md> getMdByUid(String articleUid);
+
+	public boolean indexStatusUpdate(int id, String mdUid);
 	
 }

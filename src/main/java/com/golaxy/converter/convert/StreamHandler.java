@@ -33,7 +33,7 @@ public class StreamHandler extends Thread {
             String line=null;
             while ( (line = br.readLine()) != null) {
                 //System.out.println("PRINT > " + m_type + " : " + line);
-                logger.info(m_type + " : " + line);
+                logger.debug(m_type + " : " + line);
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();

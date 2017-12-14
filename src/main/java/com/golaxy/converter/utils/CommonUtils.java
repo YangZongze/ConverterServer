@@ -354,17 +354,16 @@ public class CommonUtils {
 		Document doc = null;
 		try {
 			doc = Jsoup.parse(file, "UTF-8");
-		} catch (IOException e) {
+            Elements elements = doc.select("meta");
+            for (int i=0; i<elements.size(); i++) {
+                charset = elements.get(i).attr("charset");
+                if (charset != null)
+                    break;
+            }
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		Elements elements = doc.select("meta");	
-		for (int i=0; i<elements.size(); i++) {
-			charset = elements.get(i).attr("charset");
-			if (charset != null)
-				break;
-		}
-		
+
 		if (charset == null) {
 			charset = getFileEncode(htmlFile);
 		}

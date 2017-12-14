@@ -16,8 +16,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -57,7 +59,7 @@ public class UploadController {
 		    	if ( UploadBusiness.checkExist(md5) ) {
 		    	    if ( UploadBusiness.checkUserUploaded(md5, userName) ) {
                         result.setCode(StatusCode.USER_FILE_EXSIT);
-                        result.setMsg("user file has exist");
+                        result.setMsg("you have uploaded this file");
                     } else {
                         result.setCode(StatusCode.RAW_FILE_EXSIT);
                         result.setMsg("original file has exist");
@@ -110,7 +112,12 @@ public class UploadController {
                 result.setCode(StatusCode.SUCESS_CODE);
                 result.setMsg("success");
                 result.setImgList(imgList);
-                result.setMdList(mdList);
+                List<ConverterResult> mdList1 = new ArrayList<>();
+                Iterator<ConverterResult> it = mdList.iterator();
+                while (it.hasNext()) {
+                    mdList1.add(it.next().clone());
+                }
+                result.setMdList(mdList1);
 
                 articleName = CommonUtils.getFileNameNoExt(articleName.trim());
                 userSource = userSource==null ? "" : userSource;
@@ -122,23 +129,14 @@ public class UploadController {
                        cateId = 0;
                    }
                 }
+                String articleUid = CommonUtils.getUniqueId();
                 MdSave.gitlabSave(articleName, userName, mdList, imgList);
-                MdSave.mysqlSaveRemote(CommonUtils.getUniqueId(), md5, articleName, userName, userSource, cateId, mdList);
-                MdSave.esSave();
+                MdSave.mysqlSaveRemote(articleUid, md5, articleName, userName, userSource, cateId, mdList);
+                MdSave.esSave(articleUid, mdList);
             }
         }
 
         ResponseUtils.renderJson(response, JackJsonUtils.toJson(result));
-    }
-
-    /**
-     * 消息提醒,获取用户没有读取过的转换成功/失败消息
-     * @param request
-     * @param response
-     */
-    @RequestMapping("/notice")
-    public void getNotice(HttpServletRequest request, HttpServletResponse response) {
-
     }
 	
 	/**
@@ -165,23 +163,31 @@ public class UploadController {
             result.setCode(StatusCode.UPLOAD_PARAMS_LACK);
             result.setMsg("username/uid/md5 must be required");
 		} else {
-			Integer cateId = 0; //代表未分类
-			if (cateIdStr!=null && !cateIdStr.equals("")) {
-				try {
-					cateId = Integer.parseInt(cateIdStr);
-				} catch (Exception e) {
-					cateId = 0;
-				} 
-			}
-
-			userSource = userSource==null ? "" : userSource;
-
-			if ( UploadBusiness.upload((MultipartHttpServletRequest) request, md5, uid, userName, userSource, cateId) ) {
-                result.setCode(StatusCode.UPLOAD_SUCCESS);
-                result.setMsg("upload success");
+            md5 = md5.toLowerCase();
+            String pattern = "^([a-z0-9]{32})$";
+            boolean isMatch = md5.matches(pattern);
+            if (!isMatch) {
+                result.setCode(StatusCode.UPLOAD_MD5_INVALID);
+                result.setMsg("param md5 invalid");
             } else {
-                result.setCode(StatusCode.UPLOAD_FAILURE);
-                result.setMsg("upload failure");
+                Integer cateId = 0; //代表未分类
+                if (cateIdStr!=null && !cateIdStr.equals("")) {
+                    try {
+                        cateId = Integer.parseInt(cateIdStr);
+                    } catch (Exception e) {
+                        cateId = 0;
+                    }
+                }
+
+                userSource = userSource==null ? "" : userSource;
+
+                if ( UploadBusiness.upload((MultipartHttpServletRequest) request, md5, uid, userName, userSource, cateId) ) {
+                    result.setCode(StatusCode.UPLOAD_SUCCESS);
+                    result.setMsg("upload success");
+                } else {
+                    result.setCode(StatusCode.UPLOAD_FAILURE);
+                    result.setMsg("upload failure");
+                }
             }
 		}
 		logger.info("[文件上传Mod]: <<<<<<<<<< 用户:"+ userName + " | " + result);
@@ -189,4 +195,34 @@ public class UploadController {
 		ResponseUtils.renderJson(response, JackJsonUtils.toJson(result));
 	}
 
+    /**
+     * 消息提醒,获取用户没有读取过的转换成功/失败消息
+     * @param request
+     * @param response
+     */
+    @RequestMapping("/notice")
+    public void getNotice(HttpServletRequest request, HttpServletResponse response) {
+
+    }
+
+    /**
+     * 预览
+     * @param request
+     */
+    @RequestMapping("/preview")
+    public ModelAndView preview(HttpServletRequest request) {
+
+        String articleId = request.getParameter("article_id");
+        String swfPath = null;
+
+        if (articleId == null || articleId.equals("")) {
+            return new ModelAndView("error", "msg", "param article_id must be required");
+        } else {
+            swfPath = UploadBusiness.preview(Integer.valueOf(articleId));
+            if (swfPath == null)
+                return new ModelAndView("error", "msg", "no such file");
+        }
+
+        return new ModelAndView("preview", "swfPath", "/"+swfPath);
+    }
 }

@@ -8,9 +8,9 @@ import java.util.List;
 
 public interface IEsService {
 	
-	public void esAdd(ESSetData esSetData) throws Exception;
+	public String esIndex(ESSetData esSetData) throws Exception;
 	
-	public void esGet(List<NameValuePair> params);
+	public void esSearch(List<NameValuePair> params);
 	
 	public void esUpdate(ESSetData esSetData);
 

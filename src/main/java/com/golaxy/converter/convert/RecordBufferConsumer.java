@@ -1,7 +1,6 @@
 package com.golaxy.converter.convert;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -122,7 +121,7 @@ public class RecordBufferConsumer implements Runnable {
 
             boolean convertSuccess = false;
             try {
-                // 转换
+                // md转换
                 convertSuccess = Converter.converter(fileName, mdList, imgList);
 
                 MdSave.mysqlUpdateConvertStatus(fileMd5, StatusCode.MYSQL_CONVERT_FINISHED_SUCCESS, null);
@@ -157,7 +156,7 @@ public class RecordBufferConsumer implements Runnable {
                 // 保存gitlab存储路径
                 MdSave.mysqlSaveRemote(articleUid, fileMd5, articleName, userName, userSource, cateId, mdList);
                 // 提交ES建索引并更新索引ID到MySQL
-                MdSave.esSave();
+                MdSave.esSave(articleUid, mdList);
 
                 res = new ResponseResult();
                 res.setCode(StatusCode.WEBSOCKET_GITLAB_SAVED);

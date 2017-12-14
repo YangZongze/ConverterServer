@@ -5,7 +5,7 @@ package com.golaxy.converter.entity.frontend;
  *
  * 格式转换结果
  */
-public class ConverterResult {
+public class ConverterResult implements Cloneable {
 
     private String name;
     /** 本地存储绝对路径 **/
@@ -18,6 +18,12 @@ public class ConverterResult {
     private String url;
     /** gitlab存储路径 **/
     private String gitPath;
+    /** 数据库md表主键 **/
+    private int mdId;
+    /** 上传用户名 **/
+    private String uploadUserName;
+    /** 上传用户来源 **/
+    private int uploadUserSourceId;
 
     public String getName() {
         return name;
@@ -66,4 +72,41 @@ public class ConverterResult {
     public void setGitPath(String gitPath) {
         this.gitPath = gitPath;
     }
+
+    public int getMdId() {
+        return mdId;
+    }
+
+    public void setMdId(int mdId) {
+        this.mdId = mdId;
+    }
+
+    public String getUploadUserName() {
+        return uploadUserName;
+    }
+
+    public void setUploadUserName(String uploadUserName) {
+        this.uploadUserName = uploadUserName;
+    }
+
+    public int getUploadUserSourceId() {
+        return uploadUserSourceId;
+    }
+
+    public void setUploadUserSourceId(int uploadUserSourceId) {
+        this.uploadUserSourceId = uploadUserSourceId;
+    }
+
+    @Override
+    public ConverterResult clone() {
+        ConverterResult clone = null;
+        try {
+            clone = (ConverterResult) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+
+        return clone;
+    }
+
 }

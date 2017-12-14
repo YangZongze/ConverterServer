@@ -1,9 +1,12 @@
 package com.golaxy.converter.convert;
 
+import com.golaxy.converter.entity.es.ESSetData;
 import com.golaxy.converter.entity.frontend.ConverterResult;
 import com.golaxy.converter.exception.ExistException;
+import com.golaxy.converter.service.es.IEsService;
 import com.golaxy.converter.service.gitlab.IGitlabService;
 import com.golaxy.converter.service.mysql.*;
+import com.golaxy.converter.utils.CommonUtils;
 import com.golaxy.converter.utils.ContextUtil;
 
 import java.util.Iterator;
@@ -180,17 +183,49 @@ public class MdSave {
                 String mdGitPath = md.getGitPath();
                 int page = md.getPage();
 
-                mdService.MdAdd(articleId, articleUid, mdTitle, mdGitPath, page);
+                int mdId = mdService.mdAdd(articleId, articleUid, mdTitle, mdGitPath, page);
+                md.setMdId(mdId);
+                md.setUploadUserName(userName);
+                md.setUploadUserSourceId(uploadUserSourceId);
             }
         }
     }
 
-    public static void esSave() {
+    public static void esSave(String articleUid, List<ConverterResult> mdList) {
 
+        IEsService esService = (IEsService) ContextUtil.getBean("esService");
+
+        Iterator<ConverterResult> it = mdList.iterator();
+        while (it.hasNext()) {
+            ConverterResult md = it.next();
+
+            try {
+                ESSetData esSetData = new ESSetData();
+                esSetData.setArticle_uid(articleUid);
+                esSetData.setTitle(CommonUtils.getFileNameNoExt(md.getName()));
+                esSetData.setContent(CommonUtils.read(md.getAbsolutePath(), "UTF-8"));
+                esSetData.setPath(md.getGitPath().replace("keepwork/baike", ""));
+                esSetData.setPage(md.getPage());
+                esSetData.setTotalpage(mdList.size());
+                esSetData.setPublic_status(true);
+                esSetData.setSource(md.getUploadUserSourceId());
+                esSetData.setAuthor("");
+                esSetData.setPublish_time("");
+
+                String mdUid = esService.esIndex(esSetData);
+                if (mdUid != null)
+                    mysqlUpdateEsId(md.getMdId(), mdUid);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    public static void mysqlUpdateEsId() {
+    public static void mysqlUpdateEsId(int mdId, String mdUid) {
 
+        IMdService mdService = (IMdService) ContextUtil.getBean("mdService");
+
+        mdService.indexStatusUpdate(mdId, mdUid);
     }
 
 }

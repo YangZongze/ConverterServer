@@ -10,6 +10,7 @@ import java.util.List;
 import com.golaxy.converter.convert.GlobalVars;
 import com.golaxy.converter.entity.frontend.ConverterResult;
 import com.golaxy.converter.entity.frontend.StatusCode;
+import com.golaxy.converter.entity.mysql.Article;
 import com.golaxy.converter.entity.mysql.MdLocal;
 import com.golaxy.converter.service.mysql.IArticleService;
 import com.golaxy.converter.service.mysql.IFileService;
@@ -17,6 +18,7 @@ import com.golaxy.converter.service.mysql.IMdLocalService;
 import com.golaxy.converter.utils.CommonUtils;
 import com.golaxy.converter.utils.ContextUtil;
 import com.golaxy.converter.service.kafka.IKafkaService;
+import com.golaxy.converter.utils.Office2Swf;
 import com.golaxy.converter.websocket.SessionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -221,6 +223,42 @@ public class UploadBusiness {
         }
 
         return status;
+    }
+
+    /**
+     * 获取要预览的文件路径
+     * @param articleId
+     */
+    public static String preview(int articleId) {
+
+        IFileService fileService = (IFileService) ContextUtil.getBean("fileService");
+        IArticleService articleService = (IArticleService) ContextUtil.getBean("articleService");
+
+        Article article = articleService.getArticleById(articleId);
+        if (article == null)
+            return null;
+
+        String md5 = article.getFileMd5();
+        com.golaxy.converter.entity.mysql.File file = fileService.getFileByUid(md5);
+        if (file == null)
+            return null;
+
+        String swfPath = file.getSwfPath();
+        if (swfPath==null || swfPath.equals("")) {
+            String inputFilePath = GlobalVars.uploadPath + "/" + file.getPath();
+
+            String inputPdfFilePath = inputFilePath.replace("."+CommonUtils.getFileExt(inputFilePath), ".pdf");
+            if (new File(inputPdfFilePath).exists())
+                inputFilePath = inputPdfFilePath;
+
+            String outFilePath = Office2Swf.office2Swf(inputFilePath, null);
+
+            swfPath = CommonUtils.getRelativePath(GlobalVars.uploadPath, outFilePath);
+
+            fileService.swfPathUpdate(md5, swfPath);
+        }
+
+        return swfPath;
     }
 
 }

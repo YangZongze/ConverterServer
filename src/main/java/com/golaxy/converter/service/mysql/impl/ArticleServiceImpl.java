@@ -35,7 +35,13 @@ public class ArticleServiceImpl implements IArticleService {
         
         return article.getId();
 	}
-	
+
+    @Override
+    public Article getArticleById(int articleId) {
+
+	    return articleDao.selectByPrimaryKey(articleId);
+    }
+
 	@Override
 	public Article getArticleByUid(String articleUid) {
 		

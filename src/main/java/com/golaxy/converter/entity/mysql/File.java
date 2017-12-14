@@ -23,6 +23,8 @@ public class File {
 
     private Boolean noticeStatus;
 
+    private String swfPath;
+
     public Integer getId() {
         return id;
     }
@@ -99,5 +101,13 @@ public class File {
 
     public void setNoticeStatus(Boolean noticeStatus) {
         this.noticeStatus = noticeStatus;
+    }
+
+    public String getSwfPath() {
+        return swfPath;
+    }
+
+    public void setSwfPath(String swfPath) {
+        this.swfPath = swfPath;
     }
 }

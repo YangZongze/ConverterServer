@@ -16,8 +16,7 @@ public class MdServiceImpl implements IMdService {
 	@Resource
 	private MdDao mdDao;
 	
-	@Override
-	public int MdAdd(int articleId, String articleUid, String mdTitle, String mdUrl, int page) {
+	public int mdAdd(int articleId, String articleUid, String mdTitle, String mdUrl, int page) {
 		Md md = new Md();
 		md.setArticleId(articleId);
 		md.setArticleUid(articleUid);
@@ -25,9 +24,9 @@ public class MdServiceImpl implements IMdService {
 		md.setMdUrl(mdUrl);
 		md.setPage(page);
 		
-		 this.mdDao.insertSelective(md);
+		this.mdDao.insertSelective(md);
 		
-		 return md.getId();
+		return md.getId();
 	}
 	
 	@Override
@@ -35,5 +34,16 @@ public class MdServiceImpl implements IMdService {
 		
 		return mdDao.selectByArticleUid(articleUid);
 	}
+
+	@Override
+	public boolean indexStatusUpdate(int id, String mdUid) {
+
+	    Md md = new Md();
+	    md.setId(id);
+	    md.setMdUid(mdUid);
+        int rows = mdDao.updateByPrimaryKeySelective(md);
+
+        return rows>0? true : false;
+    }
 
 }

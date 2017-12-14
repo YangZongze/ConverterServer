@@ -46,6 +46,12 @@ public class FileServiceImpl implements IFileService {
         return file!=null ? file.getId() : id;
     }
 
+    @Override
+    public File getFileByUid(String md5) {
+
+	    return this.fileDao.selectByUniqueKey(md5);
+    }
+
     /**
      * 更新转换状态，如果出错则记录出错日志
      * @param md5
@@ -88,6 +94,25 @@ public class FileServiceImpl implements IFileService {
 
         file.setMd5(md5);
         file.setNoticeStatus(status);
+
+        int rows = this.fileDao.updateByUniqueKeySelective(file);
+
+        return rows>0? true : false;
+    }
+
+    /**
+     * 更新swfPath字段
+     * @param md5
+     * @param status
+     * @return
+     */
+    @Override
+    public boolean swfPathUpdate(String md5, String swfPath) {
+
+        File file = new File();
+
+        file.setMd5(md5);
+        file.setSwfPath(swfPath);
 
         int rows = this.fileDao.updateByUniqueKeySelective(file);
 

@@ -15,6 +15,8 @@ public class Md {
 
     private Integer page;
 
+    private Boolean indexStatus;
+
     public Integer getId() {
         return id;
     }
@@ -69,5 +71,13 @@ public class Md {
 
     public void setPage(Integer page) {
         this.page = page;
+    }
+
+    public Boolean getIndexStatus() {
+        return indexStatus;
+    }
+
+    public void setIndexStatus(Boolean indexStatus) {
+        this.indexStatus = indexStatus;
     }
 }
