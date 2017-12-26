@@ -25,6 +25,8 @@ public class ResponseResult {
     private Integer progress;
     /** 上传速度：100KB/s **/
     private String speed;
+    /** 原文件预览地址 **/
+    private String preview_url;
     /** 图片列表 **/
     List<ConverterResult> imgList;
     /** md列表 **/
@@ -84,6 +86,14 @@ public class ResponseResult {
 
     public void setSpeed(String speed) {
         this.speed = speed;
+    }
+
+    public String getPreview_url() {
+        return preview_url;
+    }
+
+    public void setPreview_url(String preview_url) {
+        this.preview_url = preview_url;
     }
 
     public List<ConverterResult> getImgList() {

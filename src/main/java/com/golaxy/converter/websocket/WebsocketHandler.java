@@ -37,7 +37,7 @@ public class WebsocketHandler extends AbstractWebSocketHandler {
         
         String uid = CommonUtils.getUniqueId();
         
-        logger.info("[websocket]: 连接: " + uid);      
+        logger.info("[websocket]: 连接成功 | uid: " + uid);
         session.getAttributes().put("uid", uid);
         ResponseResult result = new ResponseResult();
         result.setCode(StatusCode.WEBSOCKET_CONNECTED);
@@ -54,10 +54,11 @@ public class WebsocketHandler extends AbstractWebSocketHandler {
      */
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-    	
+
+        session.close();
         sessions.remove(session);
-        GlobalVars.removeSession(session);
-        logger.info("[websocket]: 断开: " + session.getAttributes().get("uid"));
+        //GlobalVars.removeSession(session);
+        logger.info("[websocket]: 连接断开 | uid: " + session.getAttributes().get("uid"));
         WebsocketHandler.reduceOnlineCount();
     }
     

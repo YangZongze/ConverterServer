@@ -36,6 +36,7 @@ public class RecordBufferProducer implements Runnable{
                 }
             }
         } while (kafkaService == null);
+
 		KafkaConsumer<String, String> consumer = kafkaService.kafkaConsumerInit(topic);
 
 		while (true) {

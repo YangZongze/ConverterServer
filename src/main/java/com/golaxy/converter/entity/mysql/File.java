@@ -23,6 +23,10 @@ public class File {
 
     private Boolean noticeStatus;
 
+    private Boolean swfConvertRunning;
+
+    private Boolean swfConvertResult;
+
     private String swfPath;
 
     public Integer getId() {
@@ -101,6 +105,22 @@ public class File {
 
     public void setNoticeStatus(Boolean noticeStatus) {
         this.noticeStatus = noticeStatus;
+    }
+
+    public Boolean getSwfConvertRunning() {
+        return swfConvertRunning;
+    }
+
+    public void setSwfConvertRunning(Boolean swfConvertRunning) {
+        this.swfConvertRunning = swfConvertRunning;
+    }
+
+    public Boolean getSwfConvertResult() {
+        return swfConvertResult;
+    }
+
+    public void setSwfConvertResult(Boolean swfConvertResult) {
+        this.swfConvertResult = swfConvertResult;
     }
 
     public String getSwfPath() {

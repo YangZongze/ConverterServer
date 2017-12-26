@@ -4,12 +4,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -18,6 +21,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -80,16 +84,24 @@ public class HttpRequestUtils {
 		return responsebody;
 	}
 	
-	public static Map<String, Object> httpPost(String url, Map<String, String> headers, String body, boolean noNeedResponse) throws URISyntaxException {
+	public static Map<String, Object> httpPost(String url, Map<String, String> headers, String body,
+                                               boolean noNeedResponse) throws TimeoutException {
 		Map<String, Object> result = new HashMap<>();
 		String responsebody = null;
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		CloseableHttpResponse response = null;
 		HttpPost httppost = null;
+        URI uri = null;
 		
 		for (int i=0; i<5; i++) {
-			try {			
-				httppost = new HttpPost(url);
+			try {
+			    httppost = uri==null ? new HttpPost(url) : new HttpPost(uri);
+
+                RequestConfig requestConfig = RequestConfig.custom()
+                        .setConnectTimeout(3000)
+                        .setConnectionRequestTimeout(1000)
+                        .setSocketTimeout(5000).build();
+                httppost.setConfig(requestConfig);
 			
 				if (headers != null) {
 					for (Map.Entry<String, String> header: headers.entrySet()) {
@@ -118,7 +130,7 @@ public class HttpRequestUtils {
 			} catch (Exception e) {
 				e.printStackTrace();
 				if(e instanceof ConnectionPoolTimeoutException){
-					if(response!=null){
+					if(response != null){
 						try {
 							response.close();
 						} catch (IOException e1) {
@@ -126,30 +138,54 @@ public class HttpRequestUtils {
 						}
 					}
 					httppost.releaseConnection();
+
+					try {
+						Thread.sleep(300);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
+					continue;
 				}
-				try {
-					Thread.sleep(300);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
-				continue;
-			} 
+				if (e instanceof URISyntaxException) {
+                    try{
+                        URL url1 = new URL(url);
+                        uri = new URI(url1.getProtocol(), url1.getHost(), url1.getPath(), url1.getQuery(), null);
+                    }catch(Exception e2){
+                        e2.printStackTrace();
+                    }
+                    continue;
+                }
+			}
+
 			result.put("body", responsebody);
 			break;
 		}
+
+		if (response == null) {
+		    throw new TimeoutException("conection failure");
+        }
+
 		return result;
 	}
 	
-	public static Map<String, Object> httpPut(String url, Map<String, String> headers, String body, boolean noNeedResponse) throws URISyntaxException {
+	public static Map<String, Object> httpPut(String url, Map<String, String> headers, String body,
+                                              boolean noNeedResponse) throws TimeoutException {
 		Map<String, Object> result = new HashMap<>();
 		String responsebody = null;
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		CloseableHttpResponse response = null;
 		HttpPut httpPut = null;
+        URI uri = null;
 		
 		for (int i=0; i<5; i++) {
-			try {			
-				httpPut = new HttpPut(url);
+			try {
+			    httpPut = uri==null ? new HttpPut(url) : new HttpPut(uri);
+
+                RequestConfig requestConfig = RequestConfig.custom()
+                        .setConnectTimeout(5000)
+                        .setConnectionRequestTimeout(1000)
+                        .setSocketTimeout(5000).build();
+                httpPut.setConfig(requestConfig);
 			
 				if (headers != null) {
 					for (Map.Entry<String, String> header: headers.entrySet()) {
@@ -184,17 +220,31 @@ public class HttpRequestUtils {
 						}
 					}
 					httpPut.releaseConnection();
+                    try {
+                        Thread.sleep(300);
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
+                    continue;
 				}
-				try {
-					Thread.sleep(300);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
-				continue;
+
+                if (e instanceof URISyntaxException) {
+                    try{
+                        URL url1 = new URL(url);
+                        uri = new URI(url1.getProtocol(), url1.getHost(), url1.getPath(), url1.getQuery(), null);
+                    }catch(Exception e2){
+                        e2.printStackTrace();
+                    }
+                    continue;
+                }
 			} 
 			result.put("body", responsebody);
 			break;
 		}
+        if (response == null) {
+            throw new TimeoutException("conection failure");
+        }
+
 		return result;
 	}
 	

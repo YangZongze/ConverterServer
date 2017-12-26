@@ -18,6 +18,12 @@
     from tbl_md_local
     where id = #{id,jdbcType=INTEGER}
   </select>
+  <select id="selectByType" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from tbl_md_local
+    where file_md5 = #{arg0} and type = #{arg1}
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from tbl_md_local
     where id = #{id,jdbcType=INTEGER}

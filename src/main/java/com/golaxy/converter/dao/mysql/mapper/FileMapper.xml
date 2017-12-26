@@ -12,10 +12,12 @@
     <result column="convert_log" jdbcType="VARCHAR" property="convertLog" />
     <result column="convert_result" jdbcType="BIT" property="convertResult" />
     <result column="notice_status" jdbcType="BIT" property="noticeStatus" />
+    <result column="swf_convert_running" jdbcType="BIT" property="swfConvertRunning" />
+    <result column="swf_convert_result" jdbcType="BIT" property="swfConvertResult" />
     <result column="swf_path" jdbcType="VARCHAR" property="swfPath" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, md5, path, name, type, upload_time, convert_status, convert_log, convert_result, notice_status, swf_path
+    id, md5, path, name, type, upload_time, convert_status, convert_log, convert_result, notice_status, swf_convert_running, swf_convert_result, swf_path
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
@@ -37,11 +39,13 @@
     insert into tbl_file (id, md5, path,
       name, type, upload_time,
       convert_status, convert_log, convert_result,
-      notice_status, swf_path)
+      notice_status, swf_convert_running, swf_convert_result,
+      swf_path)
     values (#{id,jdbcType=INTEGER}, #{md5,jdbcType=VARCHAR}, #{path,jdbcType=VARCHAR},
       #{name,jdbcType=VARCHAR}, #{type,jdbcType=VARCHAR}, #{uploadTime,jdbcType=TIMESTAMP},
       #{convertStatus,jdbcType=TINYINT}, #{convertLog,jdbcType=VARCHAR}, #{convertResult,jdbcType=BIT},
-      #{noticeStatus,jdbcType=BIT}, #{swfPath,jdbcType=VARCHAR})
+      #{noticeStatus,jdbcType=BIT}, #{swfConvertRunning,jdbcType=BIT}, #{swfConvertResult,jdbcType=BIT},
+      #{swfPath,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.golaxy.converter.entity.mysql.File">
     insert into tbl_file
@@ -76,8 +80,14 @@
       <if test="noticeStatus != null">
         notice_status,
       </if>
+      <if test="swfConvertRunning != null">
+        swf_convert_running,
+      </if>
+      <if test="swfConvertResult != null">
+        swf_convert_result,
+      </if>
       <if test="swfPath != null">
-          swf_path,
+        swf_path,
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -111,6 +121,12 @@
       <if test="noticeStatus != null">
         #{noticeStatus,jdbcType=BIT},
       </if>
+      <if test="swfConvertRunning != null">
+        #{swfConvertRunning,jdbcType=BIT},
+      </if>
+      <if test="swfConvertResult != null">
+        #{swfConvertResult,jdbcType=BIT},
+      </if>
       <if test="swfPath != null">
         #{swfPath,jdbcType=VARCHAR},
       </if>
@@ -143,11 +159,17 @@
       <if test="convertResult != null">
         convert_result = #{convertResult,jdbcType=BIT},
       </if>
-      <if test="convertStatus != null">
+      <if test="noticeStatus != null">
         notice_status = #{noticeStatus,jdbcType=BIT},
       </if>
+      <if test="swfConvertRunning != null">
+        swf_convert_running = #{swfConvertRunning,jdbcType=BIT},
+      </if>
+      <if test="swfConvertResult != null">
+        swf_convert_result = #{swfConvertResult,jdbcType=BIT},
+      </if>
       <if test="swfPath != null">
-          swf_path = #{swfPath,jdbcType=VARCHAR},
+        swf_path = #{swfPath,jdbcType=VARCHAR},
       </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
@@ -163,6 +185,8 @@
       convert_log = #{convertLog,jdbcType=VARCHAR},
       convert_result = #{convertResult,jdbcType=BIT},
       notice_status = #{noticeStatus,jdbcType=BIT},
+      swf_convert_running = #{swfConvertRunning,jdbcType=BIT},
+      swf_convert_result = #{swfConvertResult,jdbcType=BIT},
       swf_path = #{swfPath,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
@@ -193,8 +217,14 @@
       <if test="noticeStatus != null">
         notice_status = #{noticeStatus,jdbcType=BIT},
       </if>
+      <if test="swfConvertRunning != null">
+        swf_convert_running = #{swfConvertRunning,jdbcType=BIT},
+      </if>
+      <if test="swfConvertResult != null">
+        swf_convert_result = #{swfConvertResult,jdbcType=BIT},
+      </if>
       <if test="swfPath != null">
-          swf_path = #{swfPath,jdbcType=VARCHAR},
+        swf_path = #{swfPath,jdbcType=VARCHAR},
       </if>
     </set>
     where md5 = #{md5,jdbcType=VARCHAR}

@@ -22,7 +22,7 @@ public class HandshakeInterceptor extends HttpSessionHandshakeInterceptor {
     public boolean beforeHandshake(ServerHttpRequest request,
                                    ServerHttpResponse response, WebSocketHandler wsHandler,
                                    Map<String, Object> attributes) throws Exception {
-        logger.info("[websocket]: Before Handshake");
+        //logger.info("[websocket]: Before Handshake");
         return super.beforeHandshake(request, response, wsHandler, attributes);  
     }  
   
@@ -30,7 +30,7 @@ public class HandshakeInterceptor extends HttpSessionHandshakeInterceptor {
     public void afterHandshake(ServerHttpRequest request,  
             ServerHttpResponse response, WebSocketHandler wsHandler,  
             Exception ex) {  
-        logger.info("[websocket]: After Handshake");
+        //logger.info("[websocket]: After Handshake");
         super.afterHandshake(request, response, wsHandler, ex);  
     }
 }

@@ -16,6 +16,8 @@ public interface MdLocalDao {
 
     List<MdLocal> selectByFileMd5(String md5);
 
+    List<MdLocal> selectByType(String md5, int type);
+
     int updateByPrimaryKeySelective(MdLocal record);
 
     int updateByPrimaryKey(MdLocal record);

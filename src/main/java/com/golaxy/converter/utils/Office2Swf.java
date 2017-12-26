@@ -1,6 +1,7 @@
 package com.golaxy.converter.utils;
 
 import com.golaxy.converter.convert.StreamHandler;
+import com.golaxy.converter.exception.ConvertFailException;
 
 import java.io.File;
 import java.util.regex.Pattern;
@@ -48,7 +49,7 @@ public class Office2Swf {
      *            输出的swf目标文件路径，如果未指定(null)，则按在源文件当前目录生成同名的swf文件
      * @return swf目标文件路径
      */
-    public static String pdf2Swf(String pdfInputFilePath, String swfOutFilePath) {
+    public static String pdf2Swf(String pdfInputFilePath, String swfOutFilePath) throws ConvertFailException {
         String command = getCommand(pdfInputFilePath, swfOutFilePath);
         try {
             Process process = Runtime.getRuntime().exec(command);
@@ -59,12 +60,19 @@ public class Office2Swf {
             outputStreamHandler.start();
 
             int exitVal = process.waitFor();
-
-            return pdfInputFilePath.replaceAll("." + getPostfix(pdfInputFilePath), ".swf");
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            if (exitVal == 0) {
+                String dstFile = pdfInputFilePath.replaceAll("." + getPostfix(pdfInputFilePath), ".swf");
+                if (CommonUtils.fileExist(dstFile))
+                    return dstFile;
+                else
+                    throw new ConvertFailException("pdf转swf失败");
+            } else {
+                throw new ConvertFailException("pdf转swf失败");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ConvertFailException("pdf转swf失败");
         }
-        return null;
     }
 
     /**
@@ -78,7 +86,7 @@ public class Office2Swf {
      *            输出的swf目标文件路径，如果未指定(null)，则按在源文件当前目录生成同名的swf文件
      * @return swf目标文件路径
      */
-    public static String office2Swf(String inputFilePath, String outputSwfPath) {
+    public static String office2Swf(String inputFilePath, String outputSwfPath) throws ConvertFailException {
         String outputPdfPath = null;
 
         if ("pdf".equals(getPostfix(inputFilePath))) {
@@ -96,7 +104,6 @@ public class Office2Swf {
             File new_outputPdfPath = new File(outputPdfPath);
 
             old_inputFilePath.renameTo(new_outputPdfPath); // 把pdf重命名
-
             outputSwfPath = pdf2Swf(outputPdfPath, outputSwfPath);
         } else {
             if (null == outputSwfPath || "".equals(outputSwfPath.trim())) {

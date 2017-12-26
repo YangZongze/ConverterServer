@@ -62,7 +62,7 @@ public class EsServiceImpl implements IEsService {
 			
 			if ( (int) result.get("code") > 300 ) { 
 				logger.error("ES | " + responseBody);
-				throw new Exception();
+				throw new Exception(responseBody);
 			} else {
 				@SuppressWarnings("unchecked")
 				Map<String, Object> res = JackJsonUtils.fromJson(responseBody, Map.class);
@@ -72,12 +72,12 @@ public class EsServiceImpl implements IEsService {
                     indexId = (String) res.get("iid");
 				} else {
                     logger.error("ES | " + responseBody);
-                    throw new Exception();
+                    throw new Exception(responseBody);
 				}
 			}	
 		} catch (Exception e) {
 			logger.error("ES | " + e.getMessage());
-			throw new Exception();
+			throw new Exception(e.getMessage());
 		}
 
 		return indexId;

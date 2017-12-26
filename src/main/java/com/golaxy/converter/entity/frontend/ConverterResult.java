@@ -14,6 +14,8 @@ public class ConverterResult implements Cloneable {
     private String relativePath;
     /** md页码 **/
     private Short page;
+    /** md页码的markdown表现形式 **/
+    private String pageMd;
     /** 本机访问url或gitlab访问url **/
     private String url;
     /** gitlab存储路径 **/
@@ -55,6 +57,14 @@ public class ConverterResult implements Cloneable {
 
     public void setPage(Short page) {
         this.page = page;
+    }
+
+    public String getPageMd() {
+        return pageMd;
+    }
+
+    public void setPageMd(String pageMd) {
+        this.pageMd = pageMd;
     }
 
     public String getUrl() {

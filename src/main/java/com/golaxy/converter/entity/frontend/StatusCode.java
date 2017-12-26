@@ -44,7 +44,9 @@ public class StatusCode {
     /** 转换失败 **/
     public static final int WEBSOCKET_CONVERT_FAILURE = 6;
     /** gitlab保存成功 **/
-    public static final int WEBSOCKET_GITLAB_SAVED = 7;
+    public static final int WEBSOCKET_GITLAB_SAVE_SUCCESS = 7;
+    /** gitlab保存失败 **/
+    public static final int WEBSOCKET_GITLAB_SAVE_FAILURE = 8;
 
 
     /** 数据库转换结果码 **/
@@ -67,5 +69,12 @@ public class StatusCode {
     public static final int MYSQL_CONVERT_FINISHED_SUCCESS = 4;
     /** 转换失败 **/
     public static final int MYSQL_CONVERT_FINISHED_FAILURE = 5;
+
+
+    /** 数据库swf转换状态码 **/
+    /** 未开始转换 **/
+    public static final boolean SWF_CONVERT_NOT_RUNNING = false;
+    /** 正在转换 **/
+    public static final boolean SWF_CONVERT_RUNNING = true;
 
 }

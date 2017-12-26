@@ -17,6 +17,10 @@ public interface IFileService {
 
     public boolean noticeStatusUpdate(String md5, boolean status);
 
-    public boolean swfPathUpdate(String md5, String swfPath);
+    public boolean swfPathUpdate(String md5, boolean isRunning, String swfPath);
+
+    public String getFileType(String md5);
+
+    public boolean getSwfConvertIsRunning(String md5);
 
 }

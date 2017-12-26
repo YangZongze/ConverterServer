@@ -11,5 +11,7 @@ public interface IMdLocalService {
 	public int MdLocalAdd(String fileMd5, Integer type, String name, String path, Short page);
 
 	public List<MdLocal> getResultByMd5(String fileMd5);
+
+	public List<MdLocal> getMdPathByMd5(String fileMd5, int imgOrMd);
 	
 }

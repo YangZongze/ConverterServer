@@ -103,20 +103,61 @@ public class FileServiceImpl implements IFileService {
     /**
      * 更新swfPath字段
      * @param md5
-     * @param status
+     * @param swfPath
      * @return
      */
     @Override
-    public boolean swfPathUpdate(String md5, String swfPath) {
+    public boolean swfPathUpdate(String md5, boolean isRunning, String swfPath) {
 
         File file = new File();
 
         file.setMd5(md5);
-        file.setSwfPath(swfPath);
+        if (!isRunning) {
+            if (swfPath!=null) {
+                file.setSwfConvertResult(true);
+                file.setSwfPath(swfPath);
+            } else {
+                file.setConvertResult(false);
+            }
+        }
+        file.setSwfConvertRunning(isRunning);
 
         int rows = this.fileDao.updateByUniqueKeySelective(file);
 
         return rows>0? true : false;
+    }
+
+    /**
+     * 获取swf转换状态
+     * @param md5
+     * @return
+     */
+    @Override
+    public boolean getSwfConvertIsRunning(String md5) {
+
+        File file = this.fileDao.selectByUniqueKey(md5);
+        if (file == null) {
+            return false;
+        }
+
+
+        return file.getSwfConvertRunning();
+    }
+
+    /**
+     * 获取文件类型
+     * @param md5
+     * @return
+     */
+    @Override
+    public String getFileType(String md5) {
+
+        File file = this.fileDao.selectByUniqueKey(md5);
+        if (file == null) {
+            return null;
+        }
+
+        return file.getType();
     }
 
 }

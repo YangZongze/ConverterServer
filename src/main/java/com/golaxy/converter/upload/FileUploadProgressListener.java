@@ -50,11 +50,11 @@ public class FileUploadProgressListener implements ProgressListener {
         String userName = request.getParameter("username");
 		if (userName==null || userName.equals("")) {
 			String result = "{\"code\":\"202\",\"msg\":\"no username\"}";
-			logger.info("[文件上传]: <<<<<<<<<< 用户:" + userName + result);
+			logger.info("[文件上传]: 用户名:" + userName + " | uid: " + uid + "|" + result);
 			SessionHandler.closeSession(webSocketSession);
 			return;			
 		} else {
-			logger.info("[文件上传]: <<<<<<<<<< 用户:" + userName);
+			logger.info("[文件上传]: 用户名：" + userName + " | uid: " + uid);
 		}   
     }  
 

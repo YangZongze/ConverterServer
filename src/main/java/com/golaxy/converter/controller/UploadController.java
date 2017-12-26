@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.golaxy.converter.business.UploadBusiness;
+import com.golaxy.converter.convert.GlobalVars;
 import com.golaxy.converter.convert.MdSave;
 import com.golaxy.converter.entity.frontend.ConverterResult;
 import com.golaxy.converter.entity.frontend.ResponseResult;
@@ -100,7 +101,7 @@ public class UploadController {
                 result.setCode(StatusCode.UPLOAD_MD5_INVALID);
                 result.setMsg("param md5 invalid");
             } else {
-                List<ConverterResult> results = UploadBusiness.getResult(userName, md5);
+                List<ConverterResult> results = UploadBusiness.getResult(md5);
                 List<ConverterResult> imgList = new ArrayList<>();
                 List<ConverterResult> mdList = new ArrayList<>();
                 for (ConverterResult res : results) {
@@ -111,16 +112,9 @@ public class UploadController {
                 }
                 result.setCode(StatusCode.SUCESS_CODE);
                 result.setMsg("success");
-                result.setImgList(imgList);
-                List<ConverterResult> mdList1 = new ArrayList<>();
-                Iterator<ConverterResult> it = mdList.iterator();
-                while (it.hasNext()) {
-                    mdList1.add(it.next().clone());
-                }
-                result.setMdList(mdList1);
 
-                articleName = CommonUtils.getFileNameNoExt(articleName.trim());
                 userSource = userSource==null ? "" : userSource;
+                articleName = CommonUtils.getFileNameNoExt(articleName.trim());
                 Integer cateId = 0; //代表未分类
                 if (cateIdStr!=null && !cateIdStr.equals("")) {
                    try {
@@ -130,9 +124,38 @@ public class UploadController {
                    }
                 }
                 String articleUid = CommonUtils.getUniqueId();
-                MdSave.gitlabSave(articleName, userName, mdList, imgList);
-                MdSave.mysqlSaveRemote(articleUid, md5, articleName, userName, userSource, cateId, mdList);
-                MdSave.esSave(articleUid, mdList);
+                articleName = articleName.replaceAll("[ 　]{1,}", "_");
+                MdSave.mysqlSaveRemoteArticle(articleUid, md5, articleName, userName, userSource, cateId);
+                boolean saveStatue = MdSave.gitlabSave(articleName, userName, md5, mdList, imgList);
+                if (saveStatue) {
+                    logger.info(Thread.currentThread().getName()+"[gitlab]: gitlab上传成功 | md5 :"+md5+" | uid: "+articleUid+" | 文件名: "+articleName);
+                    MdSave.mysqlSaveRemote(articleUid, md5, articleName, userName, userSource, cateId, mdList);
+                    logger.info(Thread.currentThread().getName()+"[mysql]: gitlab路径保存 | md5 :"+md5+" | uid: "+articleUid+" | 文件名: "+articleName);
+                    MdSave.esSaveAsyn(articleUid, mdList);
+                    switch (userSource) {
+                        case "keepwork":
+                            List<ConverterResult> mdList1 = new ArrayList<>();
+                            Iterator<ConverterResult> it = mdList.iterator();
+                            while (it.hasNext()) {
+                                mdList1.add(it.next().clone());
+                            }
+                            result.setMdList(mdList1);
+                            result.setImgList(imgList);
+                            break;
+                        case "tatfook":
+                        default:
+                            result.setMdList(mdList);
+                            result.setImgList(null);
+                            if (UploadBusiness.isPreview(md5))
+                                result.setPreview_url(GlobalVars.mdServer+"/ConverterServer/file/preview?md5="+md5);
+                            break;
+                    }
+                } else {
+                    logger.error(Thread.currentThread().getName()+"[gitlab]: gitlab上传失败 | md5 :"+md5+" | uid: "+articleUid+" | 文件名: "+articleName);
+                    MdSave.mysqlDeleteArticle(articleUid);
+                    result.setCode(StatusCode.UPLOAD_FAILURE);
+                    result.setMsg("save failure");
+                }
             }
         }
 
@@ -190,7 +213,7 @@ public class UploadController {
                 }
             }
 		}
-		logger.info("[文件上传Mod]: <<<<<<<<<< 用户:"+ userName + " | " + result);
+		//logger.info("[文件上传Mod]: <<<<<<<<<< 用户:"+ userName + " | " + result);
 
 		ResponseUtils.renderJson(response, JackJsonUtils.toJson(result));
 	}
@@ -213,14 +236,27 @@ public class UploadController {
     public ModelAndView preview(HttpServletRequest request) {
 
         String articleId = request.getParameter("article_id");
+        String fileMd5 = request.getParameter("md5");
         String swfPath = null;
 
-        if (articleId == null || articleId.equals("")) {
-            return new ModelAndView("error", "msg", "param article_id must be required");
+        if ((articleId == null || articleId.equals("")) && (fileMd5 == null || fileMd5.equals(""))) {
+            return new ModelAndView("error", "msg", "param article_id or md5 must be required");
         } else {
-            swfPath = UploadBusiness.preview(Integer.valueOf(articleId));
+            if (fileMd5 != null && !fileMd5.equals("")) {
+                fileMd5 = fileMd5.toLowerCase();
+                String pattern = "^([a-z0-9]{32})$";
+                boolean isMatch = fileMd5.matches(pattern);
+                if (isMatch) {
+                    swfPath = UploadBusiness.preview(fileMd5);
+                } else {
+                    swfPath = UploadBusiness.preview(Integer.valueOf(articleId));
+                }
+            } else {
+                swfPath = UploadBusiness.preview(Integer.valueOf(articleId));
+            }
+
             if (swfPath == null)
-                return new ModelAndView("error", "msg", "no such file");
+                return new ModelAndView("error", "msg", "打开失败");
         }
 
         return new ModelAndView("preview", "swfPath", "/"+swfPath);

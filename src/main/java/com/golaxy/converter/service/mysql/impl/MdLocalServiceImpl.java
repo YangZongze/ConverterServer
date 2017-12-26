@@ -39,4 +39,10 @@ public class MdLocalServiceImpl implements IMdLocalService {
         return mdLocalDao.selectByFileMd5(fileMd5);
 	}
 
+	@Override
+	public List<MdLocal> getMdPathByMd5(String fileMd5, int imgOrMd) {
+
+		return mdLocalDao.selectByType(fileMd5, imgOrMd);
+	}
+
 }

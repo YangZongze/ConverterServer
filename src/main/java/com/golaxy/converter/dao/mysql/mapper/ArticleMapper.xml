@@ -374,6 +374,6 @@
         content = #{content,jdbcType=LONGVARCHAR},
       </if>
     </set>
-    where article_uid = #{article_uid,jdbcType=VARCHAR}
+    where article_uid = #{articleUid,jdbcType=VARCHAR}
   </update>
 </mapper>

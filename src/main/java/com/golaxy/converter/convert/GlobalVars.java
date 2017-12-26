@@ -47,10 +47,12 @@ public class GlobalVars {
 	public static Map<String, TopicInfo> topics = new ConcurrentHashMap<>();
 
 	public static String uploadPath;
+    public static String uploadRootPath;
     public static String encoding;
     public static String mdServer;
     public static String DConverterPath;
     public static String gitlabRawBaseUrl;
+    public static String keepworkUserProj;
     /** 是否OCR转换 **/
     public static boolean OCR;
 
@@ -62,10 +64,12 @@ public class GlobalVars {
 		}
 
 		uploadPath = properties.getProperty("uploadPath");
+        uploadRootPath = properties.getProperty("uploadRootPath");
 		encoding = System.getProperty("os.name").toLowerCase().startsWith("win") ? "GBK" : "UTF-8";
         mdServer = properties.getProperty("mdServer");
         DConverterPath = properties.getProperty("DConverter_path");
         gitlabRawBaseUrl = properties.getProperty("gitlabRawBaseUrl");
+        keepworkUserProj = properties.getProperty("keepworkUserProj");
 
         switch(properties.getProperty("OCR").toLowerCase()) {
             case "yes":

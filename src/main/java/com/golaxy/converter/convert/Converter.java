@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import com.golaxy.converter.entity.frontend.ConverterResult;
 import com.golaxy.converter.exception.ConvertFailException;
+import com.golaxy.converter.utils.Base64Util;
 import com.golaxy.converter.utils.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +74,7 @@ public class Converter {
                 break;
 			default:
 				break;
-		}	
+		}
 		
 		if (state && !CommonUtils.getFileExt(srcFile).equalsIgnoreCase("txt")) {
 			// 当前路径下新建image文件夹
@@ -111,7 +112,8 @@ public class Converter {
 						}
 						imageName = base64Src2Image(imageSrc, imagePath+File.separator+srcFileNameNoExt+(i+1));
 						break;
-					case "http:":   //URL					
+					case "http:":   //绝对路径URL
+
 						break;
 					default:        //相对路径
 						imageName = relativeImageSave(htmlPath+imageSrc, imagePath+File.separator+srcFileNameNoExt+(i+1));
@@ -135,7 +137,7 @@ public class Converter {
 					} 
 					
 					int index = mdBuf.indexOf(mdVoidImg);
-                    String imageRelPath = CommonUtils.getRelativePath(GlobalVars.uploadPath, imageAbsName);
+                    String imageRelPath = CommonUtils.getRelativePath(GlobalVars.uploadRootPath, imageAbsName);
                     String imageUrl = mdServer + "/" + imageRelPath;
 					mdBuf.replace(index+4, index+4, imageUrl);
                     ConverterResult img = new ConverterResult();
@@ -152,24 +154,24 @@ public class Converter {
 			 * md表格格式调整
 			 * 修正表头位置不对的问题
 			 */
-			List<Integer> indexes = findIndex("[^|][\n][|]", mdBuf.toString());
-			for (Integer index : indexes) {
-				int line1Head = mdBuf.indexOf("|", index);
-				int line1Tail = mdBuf.indexOf("|\n", line1Head) +1;
-				String line1 = mdBuf.substring(line1Head, line1Tail);
-				
-				int line2Head = mdBuf.indexOf("|", line1Tail);
-				int line2Tail = mdBuf.indexOf("|\n", line2Head) +1;
-				String line2 = mdBuf.substring(line2Head, line2Tail);
-				
-				Boolean isNeedFix = false;
-				if (line1.contains("-") && !line2.contains("-"))
-					isNeedFix = true;
-				if (isNeedFix) {
-					mdBuf.replace(line1Head, line1Tail, line2);
-					mdBuf.replace(line2Head, line2Tail, line1);
-				}
-			}
+//			List<Integer> indexes = findIndex("[^|][\n][|]", mdBuf.toString());
+//			for (Integer index : indexes) {
+//				int line1Head = mdBuf.indexOf("|", index);
+//				int line1Tail = mdBuf.indexOf("|\n", line1Head) +1;
+//				String line1 = mdBuf.substring(line1Head, line1Tail);
+//
+//				int line2Head = mdBuf.indexOf("|", line1Tail);
+//				int line2Tail = mdBuf.indexOf("|\n", line2Head) +1;
+//				String line2 = mdBuf.substring(line2Head, line2Tail);
+//
+//				Boolean isNeedFix = false;
+//				if (line1.contains("-") && !line2.contains("-"))
+//					isNeedFix = true;
+//				if (isNeedFix) {
+//					mdBuf.replace(line1Head, line1Tail, line2);
+//					mdBuf.replace(line2Head, line2Tail, line1);
+//				}
+//			}
 			CommonUtils.writeStringBuffer2File(mdFile, mdBuf);
 		} 
 		
@@ -178,7 +180,7 @@ public class Converter {
             ArrayList<String> mdSubFiles = mdSplit(mdFile);
             for (int i=0; i<mdSubFiles.size(); i++) {
                 String mdAbsName = mdSubFiles.get(i);
-                String mdRelName = CommonUtils.getRelativePath(GlobalVars.uploadPath, mdAbsName);
+                String mdRelName = CommonUtils.getRelativePath(GlobalVars.uploadRootPath, mdAbsName);
                 String mdSubFileName = new File(mdAbsName).getName();
 
                 String mdUrl = mdServer + "/" + mdRelName;
@@ -211,8 +213,7 @@ public class Converter {
         Pattern p = Pattern.compile(reg);
         Matcher m = p.matcher(str);
          
-        while(m.find())
-        {
+        while(m.find()) {
         	indexes.add(m.start());
         }
         
@@ -239,9 +240,6 @@ public class Converter {
             for (int i=0; i<mdStrings.size(); i++) {
                 String mdFileName = srcFileNameNoExt + "（第" + (i+1) + "页）" + ".md";
                 String mdFile = mdPath + File.separator + mdFileName;
-
-                //加分页链接
-
 
                 CommonUtils.write(mdFile, mdStrings.get(i), "UTF-8");
                 mdNames.add(mdFile);
@@ -307,29 +305,49 @@ public class Converter {
 		
 		if (!CommonUtils.fileExist(htmlFile)) {
 			logger.info("[格式转换]: html-->md html:" + htmlFile+"不存在");
-			throw new ConvertFailException();
+			throw new ConvertFailException(htmlFile+"不存在");
 		}
 		//格式转换为utf-8
-		String charset = CommonUtils.getHtmlCharset(htmlFile);
-		if (!charset.equalsIgnoreCase("utf-8")) {
-			try {
-				CommonUtils.write(htmlFile, CommonUtils.read(htmlFile, charset), "UTF-8");
-			} catch (Exception e) {
-				//e.printStackTrace();
-				logger.error(e.getMessage() + " | " + charset);
-			}
-		}
-		
-		exit = converterUtil(htmlFile, mdPath);
+//		String charset = CommonUtils.getHtmlCharset(htmlFile);
+//		if (!charset.equalsIgnoreCase("utf-8")) {
+//			try {
+//				CommonUtils.write(htmlFile, CommonUtils.read(htmlFile, charset), "UTF-8");
+//			} catch (Exception e) {
+//				//e.printStackTrace();
+//				logger.error(e.getMessage() + " | " + charset);
+//			}
+//            try {
+//                CommonUtils.saveUTF8Html(htmlFile);
+//            } catch (IOException e) {
+//                throw new ConvertFailException("HTML格式解析出错");
+//            }
+//		}
 
+		exit = converterUtil(htmlFile, mdPath);
         if (exit) {
-        	String htmlFileName = CommonUtils.getFileNameNoExt(htmlFile);
-        	if (new File(mdPath+File.separator+htmlFileName+".md").exists())
-        		logger.info("[格式转换]: html-->md 成功");
-        	else
-        		exit = false;
+        	String fileName = CommonUtils.getFileNameNoExt(htmlFile);
+        	String mdFile = mdPath + File.separator + fileName + ".md";
+        	if (new File(mdFile).exists()) {
+        	    try {
+                    String content = CommonUtils.read(mdFile, "UTF-8");
+
+                    content = formatAdjust(content);
+
+                    String title = fileName;
+                    String mdContent = "## " + title + "\n---\n" + content;
+
+                    CommonUtils.write(mdFile, mdContent, "UTF-8");
+
+                    logger.info("[格式转换]: html-->md 成功");
+                } catch (Exception e) {
+                    exit = false;
+                }
+            } else {
+                throw new ConvertFailException("html->md转换失败");
+            }
         } else {
-        	logger.info("[格式转换]: html-->md 失败");
+        	logger.error("[格式转换]: html-->md 失败");
+            throw new ConvertFailException("html->md转换失败");
         }
 
         return exit;
@@ -354,9 +372,13 @@ public class Converter {
 				CommonUtils.fileDelete(txtFile);
 				CommonUtils.write(txtFile, content, "UTF-8");
 			}
-			String title = CommonUtils.getFileNameNoExt(txtFile);
-			String mdContent = "## " + title + "\n\n" + content;
-			String mdFile = txtFile.substring(0, txtFile.lastIndexOf(".")+1) + "md";
+
+            content = formatAdjust(content);
+
+            String title = CommonUtils.getFileNameNoExt(txtFile);
+            String mdContent = "## " + title + "\n---\n" + content;
+            String mdFile = txtFile.substring(0, txtFile.lastIndexOf(".")+1) + "md";
+
 			CommonUtils.write(mdFile, mdContent, "UTF-8");
 			
 			if (new File(mdFile).exists()) {
@@ -364,7 +386,7 @@ public class Converter {
         		logger.info("[格式转换]: txt-->md 成功");
 			} else {
         		exit = false;
-        		logger.info("[格式转换]: txt-->md 失败");
+        		logger.error("[格式转换]: txt-->md 失败");
         		throw new ConvertFailException();
 			}
 		} catch (IOException e) {
@@ -408,6 +430,55 @@ public class Converter {
         }
 
         return exit;
+    }
+
+    /**
+     * 对原内容格式进行一些微调
+     * @param srcStr
+     * @return
+     */
+    private static String formatAdjust(String srcStr) {
+
+        String dstStr = srcStr;
+
+        // 对过多换行做处理
+        Pattern p = Pattern.compile("(\r\n){2,}|\n{2,}");
+        Matcher m = p.matcher(srcStr);
+        if (m.find())
+            dstStr = m.replaceAll("\n\n");
+
+        // 对符号两边存在换行做处理
+        p = Pattern.compile("\n+\\\\{0,1}([0-9<>《》\\[\\]()、,，∙.。：:;；！!*&^%$#@~`?？'\"“”·-—－－-])\n+");
+        while (true) {
+            m = p.matcher(dstStr);
+            if (m.find())
+                dstStr = m.replaceFirst(m.group(1));
+            else
+                break;
+        }
+
+        // 对符号左边存在换行做处理
+        p = Pattern.compile("\n+\\\\{0,1}([<>《》\\[\\]()、,，∙.。：:;；！!*&^%$#@~`?？'\"“”·-—－－])");
+        while (true) {
+            m = p.matcher(dstStr);
+            if (m.find())
+                dstStr = m.replaceFirst(m.group(1));
+            else
+                break;
+        }
+
+        // 对符号右边存在换行做处理
+        p = Pattern.compile("\\\\{0,1}([<>《》\\[\\]()、∙•.：:*&^%$#@~`'\"“”·-—－－])\n\n");
+        while (true) {
+            m = p.matcher(dstStr);
+            if (m.find())
+                dstStr = m.replaceFirst(m.group(1));
+            else
+                break;
+        }
+
+
+        return dstStr;
     }
 	
 	/**
@@ -489,8 +560,8 @@ public class Converter {
 		String imgExt = imgSrcBase64[0].substring(imgSrcBase64[0].indexOf("/")+1, imgSrcBase64[0].indexOf(";"));
 		String imgBase64Str = imgSrcBase64[1];
 		String imgAbsName = fileAbsNameNoExt + "." + imgExt;
-		
-		CommonUtils.base642Image(imgBase64Str, imgAbsName);
+
+        Base64Util.base642File(imgBase64Str, imgAbsName);
 		
 		if (CommonUtils.fileExist(imgAbsName)) {
 			imgName = CommonUtils.getFileNameFromAbspath(imgAbsName);

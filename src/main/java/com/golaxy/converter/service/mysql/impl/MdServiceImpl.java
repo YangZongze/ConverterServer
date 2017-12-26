@@ -40,7 +40,11 @@ public class MdServiceImpl implements IMdService {
 
 	    Md md = new Md();
 	    md.setId(id);
-	    md.setMdUid(mdUid);
+	    if (mdUid!=null && !mdUid.equals("")) {
+			md.setMdUid(mdUid);
+			md.setIndexStatus(true);
+		}
+
         int rows = mdDao.updateByPrimaryKeySelective(md);
 
         return rows>0? true : false;

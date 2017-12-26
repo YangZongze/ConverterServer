@@ -3,6 +3,7 @@ package com.golaxy.converter.websocket;
 import java.io.IOException;
 import java.util.Iterator;
 
+import com.golaxy.converter.convert.GlobalVars;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -111,6 +112,7 @@ public class SessionHandler {
 		try {
 	    	if (session != null && session.isOpen())
 	    		session.close();
+            GlobalVars.removeSession(session);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

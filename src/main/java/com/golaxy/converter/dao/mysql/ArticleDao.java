@@ -5,6 +5,8 @@ import com.golaxy.converter.entity.mysql.Article;
 public interface ArticleDao {
     int deleteByPrimaryKey(Integer id);
 
+    int deleteByUniqueKey(String uid);
+
     int insert(Article record);
 
     int insertSelective(Article record);

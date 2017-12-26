@@ -8,6 +8,7 @@ import javax.annotation.Resource;
 import com.golaxy.converter.dao.mysql.ArticleDao;
 import com.golaxy.converter.entity.mysql.Article;
 import com.golaxy.converter.service.mysql.IArticleService;
+import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.stereotype.Service;
 
 
@@ -37,6 +38,12 @@ public class ArticleServiceImpl implements IArticleService {
 	}
 
     @Override
+    public void articleDel(String articleUid) {
+
+        this.articleDao.deleteByUniqueKey(articleUid);
+    }
+
+    @Override
     public Article getArticleById(int articleId) {
 
 	    return articleDao.selectByPrimaryKey(articleId);
@@ -56,6 +63,41 @@ public class ArticleServiceImpl implements IArticleService {
         Article article = articleDao.selectByUserMd5(md5, userName);
 
         return article!=null ? article.getId() : id;
+    }
+
+    @Override
+    public boolean indexStatusUpdate(String articleUid, boolean status) {
+
+        Article article = new Article();
+        article.setArticleUid(articleUid);
+        article.setIndexStatus(status);
+
+        int rows = articleDao.updateByUniqueKeySelective(article);
+
+        return rows>0? true : false;
+    }
+
+    @Override
+    public boolean getIndexStatus(String articleUid) throws NotFoundException {
+
+	    Article article = articleDao.selectByUniqueKey(articleUid);
+	    if (article != null) {
+	        return article.getIndexStatus();
+        } else {
+	        throw new NotFoundException("文章不存在", new Exception());
+        }
+    }
+
+    @Override
+    public Article totalPageUpdate(String articleUid, int totalPage) {
+
+        Article article = new Article();
+        article.setArticleUid(articleUid);
+        article.setTotalPage(totalPage);
+
+        int rows = articleDao.updateByUniqueKeySelective(article);
+
+        return rows>0? articleDao.selectByUniqueKey(articleUid) : null;
     }
 
 }

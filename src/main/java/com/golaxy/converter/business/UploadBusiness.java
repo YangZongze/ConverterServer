@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.golaxy.converter.convert.GlobalVars;
+import com.golaxy.converter.convert.MdSave;
 import com.golaxy.converter.entity.frontend.ConverterResult;
 import com.golaxy.converter.entity.frontend.StatusCode;
 import com.golaxy.converter.entity.mysql.Article;
@@ -35,6 +36,7 @@ public class UploadBusiness {
 
 	private final static Logger logger = LoggerFactory.getLogger(UploadBusiness.class);
 	private static String uploadPath = GlobalVars.uploadPath;
+	private static String uploadRootPath = GlobalVars.uploadRootPath;
 	private static String encoding = GlobalVars.encoding;
 
     /**
@@ -69,7 +71,7 @@ public class UploadBusiness {
      *
      * @param md5
      */
-    public static List<ConverterResult> getResult(String userName, String md5) {
+    public static List<ConverterResult> getResult(String md5) {
 
         IMdLocalService mdLocalService = (IMdLocalService) ContextUtil.getBean("mdLocalService");
 
@@ -81,7 +83,7 @@ public class UploadBusiness {
             result.setName(mdLocal.getName());
             result.setUrl(GlobalVars.mdServer + "/" + mdLocal.getPath());
             result.setName(mdLocal.getName());
-            result.setAbsolutePath(GlobalVars.uploadPath + "/" + mdLocal.getPath());
+            result.setAbsolutePath(GlobalVars.uploadRootPath + "/" + mdLocal.getPath());
             if (mdLocal.getType() == 1) {
                 result.setPage(mdLocal.getPage());
             }
@@ -90,6 +92,30 @@ public class UploadBusiness {
         }
 
         return resultList;
+    }
+
+    /**
+     * 是否可预览
+     *
+     * @param md5
+     */
+    public static boolean isPreview(String md5) {
+
+        boolean is = false;
+        IFileService fileService = (IFileService) ContextUtil.getBean("fileService");
+        switch (fileService.getFileType(md5)) {
+            case "doc":
+            case "docx":
+            case "ppt":
+            case "pptx":
+            case "pdf":
+                is = true;
+                break;
+            default:
+                break;
+        }
+
+        return is;
     }
 
 	/**
@@ -110,8 +136,10 @@ public class UploadBusiness {
 		if (uploadFileName != null) {
 		    // 1.保存mysql
             status = mysqlSave(md5, uploadFileName);
-            // 2.排队等待
-            waitInQueue(uid, md5, userName, uploadFileName, userSource, cateId);
+            if (status) {
+                // 2.排队等待
+                waitInQueue(uid, md5, userName, uploadFileName, userSource, cateId);
+            }
 		} else {
 			SessionHandler.closeSession(session);
 		}
@@ -130,7 +158,7 @@ public class UploadBusiness {
 	private static String save(MultipartHttpServletRequest multipartRequest, String md5) throws IOException {
 
 		String uploadFileName = null;
-		String savePath = uploadPath + "/upload/" + CommonUtils.getStringDate();
+		String savePath = uploadPath + File.separator + CommonUtils.getStringDate();
         boolean status = false;
 
         File saveDir = new File(savePath);
@@ -141,7 +169,8 @@ public class UploadBusiness {
 		while (iter.hasNext()) {
 			MultipartFile file = multipartRequest.getFile(iter.next().toString());
 			if (file != null) {
-				String fileName = file.getOriginalFilename();
+			    String originalFileName = file.getOriginalFilename();
+				String fileName = originalFileName;
 				try {
 					fileName = new String(fileName.getBytes(), encoding);
 				} catch (UnsupportedEncodingException e) {
@@ -155,16 +184,30 @@ public class UploadBusiness {
                 String uploadFilePath = savePath + "/" + fileNameNoExt;
                 String path = uploadFilePath;
                 int i = 1;
+                int retryTimes = 0;
                 do {
                     File uploadPath = new File(path);
                     if (uploadPath.isDirectory() && uploadPath.exists()) {
-                        String iStr = "(" + (i++) + ")";
+                        String iStr = "（" + (i++) + "）";
                         path = uploadFilePath + iStr;
                     } else {
-                        uploadPath.mkdirs();
-                        uploadFileName = uploadPath + "/" + fileName;
-                        file.transferTo(new File(uploadFileName));
-                        status = true;
+                        if (uploadPath.mkdirs() ) {
+                            uploadFileName = path + "/" + fileName;
+                            file.transferTo(new File(uploadFileName));
+                            if (new File(uploadFileName).exists()) {
+                                status = true;
+                                logger.info("[文件上传]: 成功 | md5: " + md5 + " | " + originalFileName + " | path: " +uploadFileName);
+                            } else {
+                                if ((retryTimes++) > 3) {
+                                    status = false;
+                                    logger.error("[文件上传]: 失败 | md5: " + md5 + " | " + originalFileName);
+                                    break;
+                                }
+                                continue;
+                            }
+                        } else {
+                            continue;
+                        }
                     }
                 } while (!status);
 			}
@@ -186,7 +229,7 @@ public class UploadBusiness {
 
         String fileNameNoExt = CommonUtils.getFileNameNoExt(fileName);
         String fileType = CommonUtils.getFileExt(fileName);
-        String path = CommonUtils.getRelativePath(uploadPath, fileName);
+        String path = CommonUtils.getRelativePath(uploadRootPath, fileName);
 
         int id = fileService.fileAdd(md5, fileNameNoExt, path, fileType);
 
@@ -226,12 +269,11 @@ public class UploadBusiness {
     }
 
     /**
-     * 获取要预览的文件路径
+     * 根据articleId获取要预览的文件路径
      * @param articleId
      */
     public static String preview(int articleId) {
 
-        IFileService fileService = (IFileService) ContextUtil.getBean("fileService");
         IArticleService articleService = (IArticleService) ContextUtil.getBean("articleService");
 
         Article article = articleService.getArticleById(articleId);
@@ -239,26 +281,17 @@ public class UploadBusiness {
             return null;
 
         String md5 = article.getFileMd5();
-        com.golaxy.converter.entity.mysql.File file = fileService.getFileByUid(md5);
-        if (file == null)
-            return null;
 
-        String swfPath = file.getSwfPath();
-        if (swfPath==null || swfPath.equals("")) {
-            String inputFilePath = GlobalVars.uploadPath + "/" + file.getPath();
+        return MdSave.swfConvert(md5);
+    }
 
-            String inputPdfFilePath = inputFilePath.replace("."+CommonUtils.getFileExt(inputFilePath), ".pdf");
-            if (new File(inputPdfFilePath).exists())
-                inputFilePath = inputPdfFilePath;
+    /**
+     * 根据md5获取要预览的文件路径
+     * @param md5
+     */
+    public static String preview(String md5) {
 
-            String outFilePath = Office2Swf.office2Swf(inputFilePath, null);
-
-            swfPath = CommonUtils.getRelativePath(GlobalVars.uploadPath, outFilePath);
-
-            fileService.swfPathUpdate(md5, swfPath);
-        }
-
-        return swfPath;
+        return MdSave.swfConvert(md5);
     }
 
 }
