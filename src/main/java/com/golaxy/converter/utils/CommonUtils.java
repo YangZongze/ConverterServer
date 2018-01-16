@@ -553,26 +553,35 @@ public class CommonUtils {
 	}
 
 	/**
-	 * 判断pdf是佛印影版
+	 * 判断pdf是否影印版
 	 * @param fileName
 	 * @return true是  false否
 	 */
 	public static boolean isPhotocopyPdf(String fileName) {
-		boolean is = false;
 		
-		File pdfFile = new File(fileName);
+		return isPhotocopyPdf(new File(fileName));
+	}
+
+    /**
+     * 判断pdf是否影印版
+     * @param pdfFile
+     * @return true是  false否
+     */
+    public static boolean isPhotocopyPdf(File pdfFile) {
+        boolean is = false;
+
         PDDocument document = null;
         try
         {
             // 方式一：
             /**
-            InputStream input = null;
-            input = new FileInputStream( pdfFile );
-            //加载 pdf 文档
-            PDFParser parser = new PDFParser(new RandomAccessBuffer(input));
-            parser.parse();
-            document = parser.getPDDocument();
-            **/
+             InputStream input = null;
+             input = new FileInputStream( pdfFile );
+             //加载 pdf 文档
+             PDFParser parser = new PDFParser(new RandomAccessBuffer(input));
+             parser.parse();
+             document = parser.getPDDocument();
+             **/
 
             // 方式二：
             document = PDDocument.load(pdfFile);
@@ -584,36 +593,77 @@ public class CommonUtils {
             PDFTextStripper stripper=new PDFTextStripper();
             // 设置按顺序输出
             //stripper.setSortByPosition(true);
-            
+
             int step = pages / 3;
             int totalLength = 0;
             for (int i=0; i<3; i++) {
-            	int page = 1 + i * step;
-            	stripper.setStartPage(page);
+                int page = 1 + i * step;
+                stripper.setStartPage(page);
                 stripper.setEndPage(page);
-                totalLength += stripper.getText(document).length();  
+                totalLength += stripper.getText(document).length();
             }
             if (totalLength < 15)
-            	is = true;
-            else 
-            	is = false;
-   
+                is = true;
+            else
+                is = false;
+
         } catch(Exception e) {
             e.printStackTrace();
         } finally{
             if(document != null){
                 try {
-					document.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+                    document.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        }    
-		
-		return is;
-	} 
-	
-	/**
+        }
+
+        return is;
+    }
+
+    /**
+     * 获取pdf页码
+     * @param fileName
+     * @return
+     */
+    public static int getPdfPageNum(String fileName) {
+
+        return getPdfPageNum(new File(fileName));
+    }
+
+    /**
+     * 获取pdf页码
+     * @param pdfFile
+     * @return
+     */
+    public static int getPdfPageNum(File pdfFile) {
+        int pages = -1;
+
+        PDDocument document = null;
+        try
+        {
+            document = PDDocument.load(pdfFile);
+
+            // 获取页码
+            pages = document.getNumberOfPages();
+
+        } catch(IOException e) {
+            e.printStackTrace();
+        } finally{
+            if(document != null){
+                try {
+                    document.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return pages;
+    }
+
+    /**
 	 * 按指定编码写文件
 	 * @param path
 	 * @param content
@@ -795,5 +845,48 @@ public class CommonUtils {
 
 		return path;
 	}
+
+    /**
+     * 转换毫秒时间段为02 d 10 h 38 m 31 s字符串
+     * @param ms
+     * @return
+     */
+    public static String convertTimeMillis2TimePerid(long ms) {
+
+        String ret = "";
+
+        int ss = 1000;
+        int mi = ss * 60;
+        int hh = mi * 60;
+        int dd = hh * 24;
+
+        long day = ms / dd;
+        long hour = (ms - day * dd) / hh;
+        long minute = (ms - day * dd - hour * hh) / mi;
+        long second = (ms - day * dd - hour * hh - minute * mi) / ss;
+//        long milliSecond = ms - day * dd - hour * hh - minute * mi - second * ss;
+
+        String strDay = day + "d"; //天
+        String strHour = hour + "h";//小时
+        String strMinute = minute + "m";//分钟
+        String strSecond = second + "s";//秒
+//        String strMilliSecond = milliSecond < 10 ? "0" + milliSecond : "" + milliSecond;//毫秒
+//        strMilliSecond = milliSecond < 100 ? "0" + strMilliSecond : "" + strMilliSecond;
+
+        if (day > 0)
+            ret = strDay + strHour + strMinute + strSecond;
+        else {
+            if (hour > 0)
+                ret = strHour + strMinute + strSecond;
+            else {
+                if (minute > 0)
+                    ret = strMinute + strSecond;
+                else
+                    ret = strSecond;
+            }
+        }
+
+        return ret;
+    }
 
 }

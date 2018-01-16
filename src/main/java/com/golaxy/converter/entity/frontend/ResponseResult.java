@@ -19,6 +19,8 @@ public class ResponseResult {
     private String uid;
     /** 队列长度 **/
     private Integer waitqueue;
+    /** 文章id: 数据库表id **/
+    private int article_id;
     /** 文章名字 **/
     private String article_name;
     /** 上传进度：0-100 **/
@@ -62,6 +64,14 @@ public class ResponseResult {
 
     public void setWaitqueue(Integer waitqueue) {
         this.waitqueue = waitqueue;
+    }
+
+    public int getArticle_id() {
+        return article_id;
+    }
+
+    public void setArticle_id(int article_id) {
+        this.article_id = article_id;
     }
 
     public String getArticle_name() {

@@ -125,7 +125,7 @@ public class UploadController {
                 }
                 String articleUid = CommonUtils.getUniqueId();
                 articleName = articleName.replaceAll("[ 　]{1,}", "_");
-                MdSave.mysqlSaveRemoteArticle(articleUid, md5, articleName, userName, userSource, cateId);
+                MdSave.mysqlCreateArticle(articleUid, md5, articleName, userName, userSource, cateId);
                 boolean saveStatue = MdSave.gitlabSave(articleName, userName, md5, mdList, imgList);
                 if (saveStatue) {
                     logger.info(Thread.currentThread().getName()+"[gitlab]: gitlab上传成功 | md5 :"+md5+" | uid: "+articleUid+" | 文件名: "+articleName);

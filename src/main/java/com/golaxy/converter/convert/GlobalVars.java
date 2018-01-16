@@ -28,9 +28,11 @@ public class GlobalVars {
 	public static final String ocr    = "ocr";
 	
 	/** kafka topic名字 **/
-	public static final String topicOffice = "topicOffice";
-	public static final String topicTxt    = "topicTxt";
-	public static final String topicOcr    = "topicOcr";
+	public static final String topicOffice;
+	public static final String topicTxt;
+	public static final String topicOcr;
+    public static final String topicImgUpload;
+    public static final String topicMdIndex;
 
 	/** doc/docx/ppt/pptx队列 **/
 	public static long currOfficeProcessOffset;  //当前正在转换的文件的offset
@@ -50,6 +52,7 @@ public class GlobalVars {
     public static String uploadRootPath;
     public static String encoding;
     public static String mdServer;
+	public static String kafkaServer;
     public static String DConverterPath;
     public static String gitlabRawBaseUrl;
     public static String keepworkUserProj;
@@ -63,10 +66,17 @@ public class GlobalVars {
 			e.printStackTrace();
 		}
 
+		topicOffice = properties.getProperty("topicOffice");
+		topicTxt = properties.getProperty("topicTxt");
+		topicOcr = properties.getProperty("topicOcr");
+		topicImgUpload = properties.getProperty("topicImgUpload");
+		topicMdIndex = properties.getProperty("topicMdIndex");
+
 		uploadPath = properties.getProperty("uploadPath");
         uploadRootPath = properties.getProperty("uploadRootPath");
 		encoding = System.getProperty("os.name").toLowerCase().startsWith("win") ? "GBK" : "UTF-8";
         mdServer = properties.getProperty("mdServer");
+        kafkaServer = properties.getProperty("kafkaServer");
         DConverterPath = properties.getProperty("DConverter_path");
         gitlabRawBaseUrl = properties.getProperty("gitlabRawBaseUrl");
         keepworkUserProj = properties.getProperty("keepworkUserProj");
@@ -94,20 +104,12 @@ public class GlobalVars {
 	 * @param session
 	 */
 	public static void put(String topic, String key, WebSocketSession session) {
-		switch (topic) {
-			case topicOffice:
-				officeSessions.put(key, session);
-				break;
-			case topicTxt:
-				txtSessions.put(key, session);
-				break;
-			case topicOcr:
-				ocrSessions.put(key, session);
-				break;
-			default:
-				txtSessions.put(key, session);
-				break;
-		}
+		if (topic.equals(topicOffice))
+			officeSessions.put(key, session);
+        if (topic.equals(topicTxt))
+			txtSessions.put(key, session);
+        if (topic.equals(topicOcr))
+			ocrSessions.put(key, session);
 	}
 	
 	public static void removeSession(WebSocketSession session) {
@@ -146,16 +148,15 @@ public class GlobalVars {
 	 * @return
 	 */
 	public static Map<String, WebSocketSession> getSessionGroupByTopic(String topic) {		
-		switch (topic) {
-		case topicOffice:
-			return officeSessions; 
-		case topicTxt:
+
+        if (topic.equals(topicOffice))
+			return officeSessions;
+        if (topic.equals(topicTxt))
 			return txtSessions;
-		case topicOcr:
+        if (topic.equals(topicOcr))
 			return ocrSessions;
-		default:
-			return txtSessions;
-		}
+
+        return null;
 	}
 	
 	/**
@@ -170,6 +171,7 @@ public class GlobalVars {
 			return txtSessions;
 		else if (ocrSessions.containsKey(key))
 			return ocrSessions;
+
 		return null;
 	}
 	
@@ -179,20 +181,13 @@ public class GlobalVars {
 	 * @param offset
 	 */
 	public static void setProcessingOffset(String topic, long offset) {
-		switch (topic) {
-			case topicOffice:
-				currOfficeProcessOffset = offset;
-				break;
-			case topicTxt:
-				currTxtProcessOffset = offset;
-				break;
-			case topicOcr:
-				currOcrProcessOffset = offset;
-				break;
-			default:
-				currTxtProcessOffset = offset;
-				break;
-		}
+
+        if (topic.equals(topicOffice))
+			currOfficeProcessOffset = offset;
+        if (topic.equals(topicTxt))
+			currTxtProcessOffset = offset;
+        if (topic.equals(topicOcr))
+			currOcrProcessOffset = offset;
 	}
 	
 	/**
@@ -258,20 +253,14 @@ public class GlobalVars {
 	 */
 	public static long getCurrProcessOffset(String topic) {
 		long currProcessOffset = 0L;
-		switch (topic) {
-			case topicOffice:
-				currProcessOffset = currOfficeProcessOffset;
-				break;
-			case topicTxt:
-				currProcessOffset = currTxtProcessOffset;
-				break;
-			case topicOcr:
-				currProcessOffset = currOcrProcessOffset;
-				break;
-			default:
-				currProcessOffset = currTxtProcessOffset;
-				break;
-		}
+
+        if (topic.equals(topicOffice))
+			currProcessOffset = currOfficeProcessOffset;
+        if (topic.equals(topicTxt))
+			currProcessOffset = currTxtProcessOffset;
+        if (topic.equals(topicOcr))
+			currProcessOffset = currOcrProcessOffset;
+
 		return currProcessOffset;
 	}
 }

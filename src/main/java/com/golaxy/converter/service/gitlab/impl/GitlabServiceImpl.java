@@ -191,6 +191,7 @@ public class GitlabServiceImpl implements IGitlabService {
         int retryTimes = 1;
         int timeoutTimes = 0;
         int serverErrorTimes = 0;
+        int forbiddenTimes = 0;
         do {
             Map<String, Object> result;
             try {
@@ -236,6 +237,19 @@ public class GitlabServiceImpl implements IGitlabService {
                     }
                     saveStatus = false;
                     continue;
+                } else if (body1.contains("Forbidden")){
+                    // {"message":"403 Forbidden"}
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
+                    if (forbiddenTimes++ > 2) {
+                        logger.error("Gitlab | 服务器拒绝 | " + body1);
+                        return false;
+                    }
+                    saveStatus = false;
+                    continue;
                 } else {
                     logger.error("Gitlab | " + fileName + " | " + body1);
                     serverErrorTimes = 0;
@@ -274,6 +288,7 @@ public class GitlabServiceImpl implements IGitlabService {
         int retryTimes = 1;
         int timeoutTimes = 0;
         int serverErrorTimes = 0;
+        int forbiddenTimes = 0;
         do {
             Map<String, Object> result;
             try {
@@ -309,6 +324,18 @@ public class GitlabServiceImpl implements IGitlabService {
                     }
                     if (serverErrorTimes++ > 2) {
                         logger.error("Gitlab | 服务器内部错误 | " + body1);
+                        return false;
+                    }
+                    saveStatus = false;
+                    continue;
+                } else if (body1.contains("Forbidden")){
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
+                    if (forbiddenTimes++ > 2) {
+                        logger.error("Gitlab | 服务器拒绝 | " + body1);
                         return false;
                     }
                     saveStatus = false;

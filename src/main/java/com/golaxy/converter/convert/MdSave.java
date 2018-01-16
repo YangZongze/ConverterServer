@@ -264,7 +264,7 @@ public class MdSave {
         }
     }
 
-    public static boolean mysqlSaveRemoteArticle(String articleUid, String fileMd5, String articleName,
+    public static boolean mysqlCreateArticle(String articleUid, String fileMd5, String articleName,
                                                  String userName, String userSource, Integer cateId) {
 
         IArticleService articleService = (IArticleService) ContextUtil.getBean("articleService");
@@ -318,7 +318,7 @@ public class MdSave {
      * @param userName
      * @param mdList
      */
-    public static void mysqlSaveRemoteMd(String articleUid, String userName, List<ConverterResult> mdList) {
+    public static boolean mysqlSaveRemoteMd(String articleUid, String userName, List<ConverterResult> mdList) {
 
         IArticleService articleService = (IArticleService) ContextUtil.getBean("articleService");
         IMdService mdService = (IMdService) ContextUtil.getBean("mdService");
@@ -337,7 +337,11 @@ public class MdSave {
                 md.setUploadUserName(userName);
                 md.setUploadUserSourceId(article.getUploadUserSource());
             }
+            return true;
+        } else {
+            return false;
         }
+
     }
 
     /**
@@ -349,7 +353,7 @@ public class MdSave {
     public static void mysqlSaveRemote(String articleUid, String md5, String articleName,
                                        String userName, String userSource, int cateId, List<ConverterResult> mdList) {
 
-        if(mysqlSaveRemoteArticle(articleUid, md5, articleName, userName, userSource, cateId)) {
+        if(mysqlCreateArticle(articleUid, md5, articleName, userName, userSource, cateId)) {
             mysqlSaveRemoteMd(articleUid, userName, mdList);
         }
 
@@ -504,7 +508,7 @@ public class MdSave {
         return file.getConvertStatus();
     }
 
-    public static boolean getGitlabSaveStatus(String md5, String uid) {
+    public static boolean mysqlArticleExist(String md5, String uid) {
         IArticleService articleService = (IArticleService) ContextUtil.getBean("articleService");
 
         Article article = articleService.getArticleByUid(uid);

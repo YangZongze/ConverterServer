@@ -47,6 +47,8 @@ public class StatusCode {
     public static final int WEBSOCKET_GITLAB_SAVE_SUCCESS = 7;
     /** gitlab保存失败 **/
     public static final int WEBSOCKET_GITLAB_SAVE_FAILURE = 8;
+    /** mysql保存失败 **/
+    public static final int WEBSOCKET_MYSQL_SAVE_FAILURE = 8;
 
 
     /** 数据库转换结果码 **/

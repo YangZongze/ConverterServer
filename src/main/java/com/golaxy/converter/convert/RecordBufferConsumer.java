@@ -27,6 +27,7 @@ import org.springframework.web.socket.WebSocketSession;
 public class RecordBufferConsumer implements Runnable {
 
 	private final static Logger logger = LoggerFactory.getLogger(RecordBufferConsumer.class);
+	private final static Logger convert = LoggerFactory.getLogger("convert");
 	private RecordBuffer recordBuffer;
 	
 	public RecordBufferConsumer(RecordBuffer recordBuffer) {
@@ -64,20 +65,17 @@ public class RecordBufferConsumer implements Runnable {
 
     	logger.info(Thread.currentThread().getName()+"[Kafka]: 读取成功 offset:"+offsetCurr+" | md5 :"+fileMd5+" | uid: " +uidCurr+ " | 文件名:" + fileName);
 
-
     	// 获取转换状态
         int convertState = MdSave.getConvertState(fileMd5);
         switch (convertState) {
+            case StatusCode.MYSQL_CONVERT_INQUEUE_SUCCESS:
+            case StatusCode.MYSQL_CONVERT_RUNNING:
             case StatusCode.MYSQL_CONVERT_FINISHED_SUCCESS:
-                boolean gitlabSaveStatus = MdSave.getGitlabSaveStatus(fileMd5, uidCurr);
-                if (gitlabSaveStatus)
+                if (MdSave.mysqlArticleExist(fileMd5, uidCurr))
                     return;
-                else {
-
-                }
                 break;
             default:
-                if (!MdSave.mysqlSaveRemoteArticle(articleUid, fileMd5, articleName, userName, userSource, cateId)) {
+                if (!MdSave.mysqlCreateArticle(articleUid, fileMd5, articleName, userName, userSource, cateId)) {
                     return;
                 }
                 break;
@@ -127,6 +125,8 @@ public class RecordBufferConsumer implements Runnable {
     		// 用来保存转换结果
         List<ConverterResult> mdList = new ArrayList<>();
         List<ConverterResult> imgList = new ArrayList<>();
+        long startTime = 0;
+        long endTime = 0;
 
         logger.info(Thread.currentThread().getName()+"[文档转换]: 转换开始 | md5 :"+fileMd5+" | uid: "+uidCurr+" | 文件名: "+fileName);
 
@@ -143,7 +143,9 @@ public class RecordBufferConsumer implements Runnable {
         boolean convertSuccess = false;
         try {
             // md转换
+            startTime = System.currentTimeMillis();
             convertSuccess = Converter.converter(fileName, mdList, imgList);
+            endTime = System.currentTimeMillis();
 
             MdSave.mysqlUpdateConvertStatus(fileMd5, StatusCode.MYSQL_CONVERT_FINISHED_SUCCESS, null);
             logger.info(Thread.currentThread().getName()+"[文档转换]: 转换成功 | md5 :"+fileMd5+" | uid: "+uidCurr+" | 文件名: "+fileName);
@@ -174,6 +176,19 @@ public class RecordBufferConsumer implements Runnable {
         }
 
         if (convertSuccess) {
+
+            switch (CommonUtils.getFileExt(fileName)) {
+                case "pdf":
+                    java.io.File pdfFile = new java.io.File(fileName);
+                    String name = pdfFile.getName();
+                    long size = pdfFile.length();
+                    int page = CommonUtils.getPdfPageNum(pdfFile);
+                    String spendTime = CommonUtils.convertTimeMillis2TimePerid(endTime - startTime);
+                    convert.info(name + " " + size + " " + page + " " + spendTime);
+                    break;
+            }
+
+
             boolean saveStatue;
             res = new ResponseResult();
             res.setUid(uidCurr);
@@ -187,28 +202,34 @@ public class RecordBufferConsumer implements Runnable {
                 logger.info(Thread.currentThread().getName()+"[gitlab]: gitlab上传成功 | md5 :"+fileMd5+" | uid: "+uidCurr+" | 文件名: "+fileName);
 
                 // 保存gitlab存储路径
-                MdSave.mysqlSaveRemoteMd(articleUid, userName, mdList);
-                logger.info(Thread.currentThread().getName()+"[mysql]: gitlab路径保存 | md5 :"+fileMd5+" | uid: "+uidCurr+" | 文件名: "+fileName);
+                if (MdSave.mysqlSaveRemoteMd(articleUid, userName, mdList)) {
+                    logger.info(Thread.currentThread().getName()+"[mysql]: gitlab路径保存 | md5 :"+fileMd5+" | uid: "+uidCurr+" | 文件名: "+fileName);
 
-                // 提交ES建索引并更新索引ID到MySQL
-                MdSave.esSaveAsyn(articleUid, mdList);
+                    // 提交ES建索引并更新索引ID到MySQL
+                    MdSave.esSaveAsyn(articleUid, mdList);
 
-                res.setCode(StatusCode.WEBSOCKET_GITLAB_SAVE_SUCCESS);
-                res.setMsg("save success");
-                res.setArticle_name(articleName);
-                res.setMdList(mdList);
-                switch (CommonUtils.getFileExt(fileName)) {
-                    case "doc":
-                    case "docx":
-                    case "ppt":
-                    case "pptx":
-                    case "pdf":
-                        // 转swf
-                        MdSave.swfConvert(fileMd5);
-                        res.setPreview_url(GlobalVars.mdServer + "/ConverterServer/file/preview?md5=" + fileMd5);
-                        break;
-                    default:
-                        break;
+                    res.setCode(StatusCode.WEBSOCKET_GITLAB_SAVE_SUCCESS);
+                    res.setMsg("save success");
+                    res.setArticle_name(articleName);
+                    res.setMdList(mdList);
+                    switch (CommonUtils.getFileExt(fileName)) {
+                        case "doc":
+                        case "docx":
+                        case "ppt":
+                        case "pptx":
+                        case "pdf":
+                            // 转swf
+                            MdSave.swfConvert(fileMd5);
+                            res.setPreview_url(GlobalVars.mdServer + "/ConverterServer/file/preview?md5=" + fileMd5);
+                            break;
+                        default:
+                            break;
+                    }
+                } else {
+                    logger.info(Thread.currentThread().getName()+"[mysql]: gitlab路径保存失败 | md5 :"+fileMd5+" | uid: "+uidCurr+" | 文件名: "+fileName);
+                    res.setCode(StatusCode.WEBSOCKET_MYSQL_SAVE_FAILURE);
+                    res.setMsg("save failure");
+                    MdSave.mysqlDeleteArticle(articleUid);
                 }
             } else {
                 logger.error(Thread.currentThread().getName()+"[gitlab]: gitlab上传失败 | md5 :"+fileMd5+" | uid: "+uidCurr+" | 文件名: "+fileName);

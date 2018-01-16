@@ -33,7 +33,7 @@ public class KafkaServiceImpl implements IKafkaService {
 
 	public static Producer<String, String> kafkaProducerInit() {
 		Properties props = new Properties();
-		props.put("bootstrap.servers", "localhost:9092");
+		props.put("bootstrap.servers", GlobalVars.kafkaServer);
     	props.put("acks", "all");
     	props.put("retries", 0);
     	props.put("batch.size", 16384);
@@ -48,7 +48,7 @@ public class KafkaServiceImpl implements IKafkaService {
 	@Override
 	public KafkaConsumer<String, String> kafkaConsumerInit(String topic) {
 		Properties props = new Properties();
-	    props.put("bootstrap.servers", "localhost:9092");
+	    props.put("bootstrap.servers", GlobalVars.kafkaServer);
 	    props.put("group.id", "dafu");
 	    props.put("enable.auto.commit", "true");
 	    props.put("auto.commit.interval.ms", "1000");
